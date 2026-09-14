@@ -141,8 +141,7 @@ public class Main {
 
           switch (opcion) {
             case 1:
-              System.out.println("\nAgregando Premio...");
-              // Método para guardar en el CSV
+              agregarPremio();
               break;
             case 2:
               int id = entrada("Ingresa llave de Premio: ");
@@ -191,8 +190,7 @@ public class Main {
 
           switch (opcion) {
             case 1:
-              System.out.println("\nAgregando Cliente...");
-              // Método para guardar en el CSV
+              agregarCliente();
               break;
             case 2:
               int id = entrada("Ingresa llave de Cliente: ");
@@ -230,19 +228,22 @@ private static void agregarSucursal() {
     System.out.println("Ingresa los siguientes datos para la sucursal:");
 
     int idSucursal = entrada("ID de la Sucursal (debe ser npumero): ");
+    scanner.nextLine();
     String nombreS = entradaTexto("Nombre de la Sucursal: ");
-    System.out.println("Direccion completa:");
     String calle = entradaTexto("Calle:  ");
     int numInte = entrada("Número interior: ");
+    scanner.nextLine();
     int numExte = entrada("Número exterior: ");
+    scanner.nextLine();
     String colonia = entradaTexto("Colonia: ");
     String estado = entradaTexto("Estado: ");
-    int telefono = entrada("Teléfono: ");
+    int telefonoS = entrada("Teléfono: ");
+    scanner.nextLine();
     String horarios = entradaTexto("Horarios: ");
 
     // Guardar en el archivo CSV
     try (FileWriter writer = new FileWriter("sucursal.csv", true)) {
-      writer.append(idSucursal + "," + nombreS + "," + calle + "," + numInte + "," + numExte + "," + colonia + "," + estado + "," + telefono + "," + horarios + "\n");
+      writer.append(idSucursal + "," + nombreS + "," + calle + "," + numInte + "," + numExte + "," + colonia + "," + estado + "," + telefonoS + "," + horarios + "\n");
       System.out.println("Sucursal agregada exitosamente.");
     } catch (IOException e) {
       System.out.println("Error al escribir en el archivo CSV: " + e.getMessage());
@@ -255,7 +256,7 @@ private static void agregarSucursal() {
 /**
  * Método para agregar premios
  */
-public static void agregarPremios(){
+public static void agregarPremio(){
   try{
     System.out.println("Ingresa los siguientes datos para el premio:");
 
@@ -276,6 +277,34 @@ public static void agregarPremios(){
     } 
   } catch (Exception e) {
     System.out.println("Error al agregar el premio: " + e.getMessage());
+  }
+}
+
+/**
+ * Método para agregar clientes
+ */
+public static void agregarCliente(){
+  try{
+    System.out.println("Ingresa los siguientes datos para el cliente:");
+
+    int idCliente = entrada("ID del cliente (debe ser un número): ");
+    String nombreC = entradaTexto("Nombre del cliente: ");
+    String apellidoP = entradaTexto("Apellido paterno: ");
+    String apellidoM = entradaTexto("Apellido materno: ");
+    int fechaNac = entrada("Fecha de nacimiento (DDMMYYYY): ");
+    int edad = entrada("Edad:");
+    String sexo = entradaTexto("Sexo (H/M/otro): ");
+    String correoE = entradaTexto("Correo electrónico: ");
+    int telefonoC = entrada("Teléfono: ");
+
+    try(FileWriter writer = new FileWriter("clientes.csv", true)) {
+      writer.append(idCliente + "," + nombreC + "," + apellidoP + "," + apellidoM + "," + fechaNac + "," + edad + "," + sexo + "," + correoE + "," + telefonoC + "\n");
+      System.out.println("Cliente agregado exitosamente.");
+    } catch (IOException e) {
+      System.out.println("Error al escribir en el archivo CSV: " + e.getMessage());
+    }
+  } catch (Exception e) {
+    System.out.println("Error al agregar el cliente: " + e.getMessage());
   }
 }
 
