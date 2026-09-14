@@ -10,6 +10,23 @@ import java.io.IOException;
  **/
 public class Main {
 
+      /**
+     * Método auxiliar que verifica que la entrada del usuario sea un número válido.
+     * @param mensaje Mensaje de advertencia.
+     * @return Entero valido.
+     */
+      private static long entrada(String mensaje) {
+        while (true) {
+          try {
+            System.out.print(mensaje);
+            return scanner.nextLong();
+          } catch (InputMismatchException e) {
+            System.out.println("Ingresa un numero valido.");
+            scanner.nextLong();
+          }
+        }
+      }
+    
   // Declaramos el scanner para la entraada del usuario.
   private static final Scanner scanner = new Scanner(System.in);
 
@@ -26,7 +43,8 @@ public class Main {
         // Manejo de excepciones para entradas invalidas
         try {
           mostrarMenuP();
-          int opcion = entrada("Selecciona una opción: ");
+          long opcionLong = entrada("Selecciona una opción: ");
+          int opcion = (int) opcionLong;
 
           switch (opcion) {
             //Llama al metodo entidad para hacer operaciones 
@@ -88,24 +106,25 @@ public class Main {
           System.out.println("4. Eliminar Sucursal");
           System.out.println("5. Volver al menú principal");
 
-          int opcion = entrada("Selecciona una operación: ");
+          long opcionInt = entrada("Selecciona una operación: ");
+          int opcion = (int) opcionInt;
 
           switch (opcion) {
             case 1:
               agregarSucursal();
               break;
             case 2:
-              int id = entrada("Ingresa llave de Sucursal: ");
+              long id = entrada("Ingresa llave de Sucursal: ");
               System.out.println("\nConsultando Sucursal con llave: " + id);
               // Método para buscar en el CSV
               break;
             case 3:
-              int idEdit = entrada("Ingresa la llave de Sucursal: ");
+              long idEdit = entrada("Ingresa la llave de Sucursal: ");
               System.out.println("\nEditando Sucursal con llave: " + idEdit);
               // Método para editar en el CSV
               break;
             case 4:
-              int idElim = entrada("Ingresa la llave de Sucursal a eliminar: ");
+              long idElim = entrada("Ingresa la llave de Sucursal a eliminar: ");
               System.out.println("\nEliminando Sucursal con llave: " + idElim);
               // Método para eliminar en el CSV
               break;
@@ -137,24 +156,24 @@ public class Main {
           System.out.println("4. Eliminar Premio");
           System.out.println("5. Volver al menú principal");
 
-          int opcion = entrada("Selecciona una operación: ");
-
+          long opcionInt = entrada("Selecciona una operación: ");
+          int opcion = (int) opcionInt;
           switch (opcion) {
             case 1:
               agregarPremio();
               break;
             case 2:
-              int id = entrada("Ingresa llave de Premio: ");
+              long id = entrada("Ingresa llave de Premio: ");
               System.out.println("\nConsultando Premio con llave: " + id);
               // Método para buscar en el CSV
               break;
             case 3:
-              int idEdit = entrada("Ingresa la llave de Premio: ");
+              long idEdit = entrada("Ingresa la llave de Premio: ");
               System.out.println("\nEditando Premio con llave: " + idEdit);
               // Método para editar en el CSV
               break;
             case 4:
-              int idElim = entrada("Ingresa la llave de Premio a eliminar: ");
+              long idElim = entrada("Ingresa la llave de Premio a eliminar: ");
               System.out.println("\nEliminando Premio con llave: " + idElim);
               // Método para eliminar en el CSV
               break;
@@ -186,24 +205,25 @@ public class Main {
           System.out.println("4. Eliminar Cliente");
           System.out.println("5. Volver al menú principal");
 
-          int opcion = entrada("Selecciona una operación: ");
+          long opcionLong = entrada("Selecciona una operación: ");
+          int opcion = (int) opcionLong;
 
           switch (opcion) {
             case 1:
               agregarCliente();
               break;
             case 2:
-              int id = entrada("Ingresa llave de Cliente: ");
+              long id = entrada("Ingresa llave de Cliente: ");
               System.out.println("\nConsultando Cliente con llave: " + id);
               // Método para buscar en el CSV
               break;
             case 3:
-              int idEdit = entrada("Ingresa la llave de Cliente: ");
+              long idEdit = entrada("Ingresa la llave de Cliente: ");
               System.out.println("\nEditando Cliente con llave: " + idEdit);
               // Método para editar en el CSV
               break;
             case 4:
-              int idElim = entrada("Ingresa la llave de Cliente a eliminar: ");
+              long idElim = entrada("Ingresa la llave de Cliente a eliminar: ");
               System.out.println("\nEliminando Cliente con llave: " + idElim);
               // Método para eliminar en el CSV
               break;
@@ -227,17 +247,17 @@ private static void agregarSucursal() {
   try {
     System.out.println("Ingresa los siguientes datos para la sucursal:");
 
-    int idSucursal = entrada("ID de la Sucursal (debe ser npumero): ");
+    long idSucursal = entrada("ID de la Sucursal (debe ser npumero): ");
     scanner.nextLine();
     String nombreS = entradaTexto("Nombre de la Sucursal: ");
     String calle = entradaTexto("Calle:  ");
-    int numInte = entrada("Número interior: ");
+    long numInte = entrada("Número interior: ");
     scanner.nextLine();
-    int numExte = entrada("Número exterior: ");
+    long numExte = entrada("Número exterior: ");
     scanner.nextLine();
     String colonia = entradaTexto("Colonia: ");
     String estado = entradaTexto("Estado: ");
-    int telefonoS = entrada("Teléfono: ");
+    long telefonoS = entrada("Teléfono: ");
     scanner.nextLine();
     String horarios = entradaTexto("Horarios: ");
 
@@ -260,15 +280,17 @@ public static void agregarPremio(){
   try{
     System.out.println("Ingresa los siguientes datos para el premio:");
 
-    int idPremio = entrada("ID del Premio (debe ser un número): ");
+    long idPremio = entrada("ID del Premio (debe ser un número): ");
+    scanner.nextLine();
     String nombreP = entradaTexto("Nombre del Premio: ");
     String categoria = entradaTexto("Categoría del Premio: (Bajo, Medio o Alto): ");
     String rangoEdad = entradaTexto("Rango de Edad (infantil 3-12, juvenil 13-17, adulto 18+): ");
-    int puntos = entrada("Puntos necesarios para canjear el premio: ");
-    int cantidadS = entrada("Cantidad de premios en sucursal: ");
-    int idSucursal = entrada("ID de la Sucursal donde se encuentra el premio: ");
+    long puntos = entrada("Puntos necesarios para canjear el premio: ");
+    scanner.nextLine();
+    long cantidadS = entrada("Cantidad de premios en sucursal: ");
+    scanner.nextLine();
+    long idSucursal = entrada("ID de la Sucursal donde se encuentra el premio: ");
   
-
     try(FileWriter writer = new FileWriter("premios.csv", true)) {
       writer.append(idPremio + "," + nombreP + "," + categoria + "," + rangoEdad + "," + puntos + "," + cantidadS + "," + idSucursal + "\n");
       System.out.println("Premio agregado exitosamente.");
@@ -287,15 +309,18 @@ public static void agregarCliente(){
   try{
     System.out.println("Ingresa los siguientes datos para el cliente:");
 
-    int idCliente = entrada("ID del cliente (debe ser un número): ");
+    long idCliente = entrada("ID del cliente (debe ser un número): ");
+    scanner.nextLine();
     String nombreC = entradaTexto("Nombre del cliente: ");
     String apellidoP = entradaTexto("Apellido paterno: ");
     String apellidoM = entradaTexto("Apellido materno: ");
-    int fechaNac = entrada("Fecha de nacimiento (DDMMYYYY): ");
-    int edad = entrada("Edad:");
+    long fechaNac = entrada("Fecha de nacimiento (DDMMYYYY): ");
+    scanner.nextLine();
+    long edad = entrada("Edad:");
+    scanner.nextLine();
     String sexo = entradaTexto("Sexo (H/M/otro): ");
     String correoE = entradaTexto("Correo electrónico: ");
-    int telefonoC = entrada("Teléfono: ");
+    long telefonoC = entrada("Teléfono: ");
 
     try(FileWriter writer = new FileWriter("clientes.csv", true)) {
       writer.append(idCliente + "," + nombreC + "," + apellidoP + "," + apellidoM + "," + fechaNac + "," + edad + "," + sexo + "," + correoE + "," + telefonoC + "\n");
@@ -309,7 +334,7 @@ public static void agregarCliente(){
 }
 
 /**
- * Método para leer una entrada de texto.
+ * Método auxiliar para leer una entrada de texto.
  * @param mensaje Mensaje para el usuario.
  * @return Entrada de texto válida.
  */
@@ -317,22 +342,6 @@ private static String entradaTexto(String mensaje) {
   System.out.print(mensaje);
   return scanner.nextLine();
 
-}    
-    /**
-     * Verifica que la entrada sea un numero entero
-     * @param mensaje Mensaje de advertencia.
-     * @return Entero valido.
-     */
-    private static int entrada(String mensaje) {
-      while (true) {
-        try {
-          System.out.print(mensaje);
-          return scanner.nextInt();
-        } catch (InputMismatchException e) {
-          System.out.println("Ingresa un numero entero.");
-          // Limpia el scanner para ingresar una nueva entrada
-          scanner.nextLine();
-        }
-      }
-    }
-  }
+  }    
+
+}
