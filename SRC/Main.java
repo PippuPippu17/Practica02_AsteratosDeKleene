@@ -1,7 +1,8 @@
 
 import java.util.InputMismatchException;
 import java.util.Scanner;
-
+import java.io.FileWriter;
+import java.io.IOException;
 
 /**
  * Clase que gestiona el menú  de la aplicacion 
@@ -91,8 +92,7 @@ public class Main {
 
           switch (opcion) {
             case 1:
-              System.out.println("\nAgregando Sucursal...");
-              // Método para guardar en el CSV
+              agregarSucursal();
               break;
             case 2:
               int id = entrada("Ingresa llave de Sucursal: ");
@@ -221,6 +221,47 @@ public class Main {
         }
       }
     }
+
+/**
+     * Método para agregar una sucursal al archivo CSV.
+     */
+private static void agregarSucursal() {
+  try {
+    System.out.println("Ingresa los siguientes datos para la nueva sucursal:");
+
+    int idSucursal = entrada("ID de la Sucursal (debe ser npumero): ");
+    String nombre = entradaTexto("Nombre de la Sucursal: ");
+    System.out.println("Direccion completa:");
+    String calle = entradaTexto("Calle:  ");
+    int numInte = entrada("Número interior: ");
+    int numExte = entrada("Número exterior: ");
+    String colonia = entradaTexto("Colonia: ");
+    String estado = entradaTexto("Estado: ");
+    int telefono = entrada("Teléfono: ");
+    String horarios = entradaTexto("Horarios: ");
+
+    // Guardar en el archivo CSV
+    try (FileWriter writer = new FileWriter("sucursal.csv", true)) {
+      writer.append(idSucursal + "," + nombre + "," + calle + "," + numInte + "," + numExte + "," + colonia + "," + estado + "," + telefono + "," + horarios + "\n");
+      System.out.println("Sucursal agregada exitosamente.");
+    } catch (IOException e) {
+      System.out.println("Error al escribir en el archivo CSV: " + e.getMessage());
+    }
+  } catch (Exception e) {
+    System.out.println("Error al agregar la sucursal: " + e.getMessage());
+  }
+}
+
+/**
+ * Método para leer una entrada de texto.
+ * @param mensaje Mensaje para el usuario.
+ * @return Entrada de texto válida.
+ */
+private static String entradaTexto(String mensaje) {
+  System.out.print(mensaje);
+  return scanner.nextLine();
+
+}    
     /**
      * Verifica que la entrada sea un numero entero
      * @param mensaje Mensaje de advertencia.
