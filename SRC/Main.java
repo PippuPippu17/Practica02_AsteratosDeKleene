@@ -1,5 +1,7 @@
+
 import java.util.InputMismatchException;
 import java.util.Scanner;
+
 
 /**
  * Clase que gestiona el menú  de la aplicacion 
@@ -29,17 +31,17 @@ public class Main {
             //Llama al metodo entidad para hacer operaciones 
             //con el parametro "Sucursales"
             case 1:
-              entidad("Sucursales");
+              gestionarSucursales();
               break;
             case 2:
             //Llama al metodo entidad para hacer operaciones 
             //con el parametro "Premios"
-              entidad("Premios");
+              gestionarPremios();
               break;
             case 3:
               //Llama al metodo entidad para hacer operaciones 
               //con el parametro "Clientes"
-              entidad("Clientes");
+              gestionarClientes();
               break;
             case 4:
               // Cierra la app, que triste, el usuario ya no la va a usar chale ni modo
@@ -70,64 +72,155 @@ public class Main {
         System.out.println("4. Salir");
     }
 
-    /**
-     * Toma como parametro la entrada del usuario para las operaciones de la entidad.
-     *  
-     * @param entidad Nombre de la entidad seleccionada.
+     /**
+     * Metodo para gestionar Sucursales.
      */
-    private static void entidad(String entidad) {
+     private static void gestionarSucursales() {
       boolean volvermenup = false;
 
-      // Bucle hasta que el usuario decida salir de la operacion ingresada
       while (!volvermenup) {
-        
         try {
-          // Despliega las operaciones disponibles con cada entidad
-          System.out.println("\n" + entidad);
-          System.out.println("1. Agregar " + entidad);
-          System.out.println("2. Consultar por Llave de ENtidad");
-          System.out.println("3. Editar " + entidad);
-          System.out.println("4. Eliminar " + entidad);
-          
+          System.out.println("\nSucursales");
+          System.out.println("1. Agregar Sucursal");
+          System.out.println("2. Consultar por Llave de Sucursal");
+          System.out.println("3. Editar Sucursal");
+          System.out.println("4. Eliminar Sucursal");
+          System.out.println("5. Volver al menú principal");
+
           int opcion = entrada("Selecciona una operación: ");
 
           switch (opcion) {
             case 1:
-              System.out.println("\n Agregando entidad :v");
-              // Aqui se pondra el método para guardar en el CSV
+              System.out.println("\nAgregando Sucursal...");
+              // Método para guardar en el CSV
               break;
             case 2:
-              int id = entrada("Ingresa llave de Entidad UwU");
-              // Aqui se pondra el método para buscar los datos en el CSV
-              System.out.println("\n" + entidad + id);
-              // Llamada al método de búsqueda por llave
+              int id = entrada("Ingresa llave de Sucursal: ");
+              System.out.println("\nConsultando Sucursal con llave: " + id);
+              // Método para buscar en el CSV
               break;
             case 3:
-              int idEdit = entrada("Ingresa la llave de Entidad");
-              // Llamada al método de edicion por llave
-              System.out.println("\n" + idEdit + "Edicion insana xd");
+              int idEdit = entrada("Ingresa la llave de Sucursal: ");
+              System.out.println("\nEditando Sucursal con llave: " + idEdit);
+              // Método para editar en el CSV
               break;
             case 4:
-              int idElim = entrada("Ingresa la llave a eliminar ");
-              //Llama al metodo apara eliminar lave
-              System.out.println("hola" + idElim);
+              int idElim = entrada("Ingresa la llave de Sucursal a eliminar: ");
+              System.out.println("\nEliminando Sucursal con llave: " + idElim);
+              // Método para eliminar en el CSV
               break;
             case 5:
-              // Regresa al menu principal rompiendo el bucle
               volvermenup = true;
               break;
             default:
-              // Mensaje de advertencia si se ingresa una entrada invalida
-              System.out.println("\nOpcion invalida. Elige un numero entre 1 y 5.");
+              System.out.println("\nOpción inválida. Elige un número entre 1 y 5.");
           }
         } catch (Exception e) {
-          System.out.println("\nIngresa entrada valida" + e.getMessage());
-          // Limpia el scanner para ingresar una nueva entrada
+          System.out.println("\nIngresa una entrada válida: " + e.getMessage());
           scanner.nextLine();
         }
       }
     }
 
+    /**
+     * Metodo para gestionar Premios.
+     */
+    private static void gestionarPremios() {
+      boolean volvermenup = false;
+
+      while (!volvermenup) {
+        try {
+          System.out.println("\nPremios");
+          System.out.println("1. Agregar Premio");
+          System.out.println("2. Consultar por Llave de Premio");
+          System.out.println("3. Editar Premio");
+          System.out.println("4. Eliminar Premio");
+          System.out.println("5. Volver al menú principal");
+
+          int opcion = entrada("Selecciona una operación: ");
+
+          switch (opcion) {
+            case 1:
+              System.out.println("\nAgregando Premio...");
+              // Método para guardar en el CSV
+              break;
+            case 2:
+              int id = entrada("Ingresa llave de Premio: ");
+              System.out.println("\nConsultando Premio con llave: " + id);
+              // Método para buscar en el CSV
+              break;
+            case 3:
+              int idEdit = entrada("Ingresa la llave de Premio: ");
+              System.out.println("\nEditando Premio con llave: " + idEdit);
+              // Método para editar en el CSV
+              break;
+            case 4:
+              int idElim = entrada("Ingresa la llave de Premio a eliminar: ");
+              System.out.println("\nEliminando Premio con llave: " + idElim);
+              // Método para eliminar en el CSV
+              break;
+            case 5:
+              volvermenup = true;
+              break;
+            default:
+              System.out.println("\nOpción inválida. Elige un número entre 1 y 5.");
+          }
+        } catch (Exception e) {
+          System.out.println("\nIngresa una entrada válida: " + e.getMessage());
+          scanner.nextLine();
+        }
+      }
+    }
+
+    /**
+     * Metodo para gestionar Clientes.
+     */
+    private static void gestionarClientes() {
+      boolean volvermenup = false;
+
+      while (!volvermenup) {
+        try {
+          System.out.println("\nClientes");
+          System.out.println("1. Agregar Cliente");
+          System.out.println("2. Consultar por Llave de Cliente");
+          System.out.println("3. Editar Cliente");
+          System.out.println("4. Eliminar Cliente");
+          System.out.println("5. Volver al menú principal");
+
+          int opcion = entrada("Selecciona una operación: ");
+
+          switch (opcion) {
+            case 1:
+              System.out.println("\nAgregando Cliente...");
+              // Método para guardar en el CSV
+              break;
+            case 2:
+              int id = entrada("Ingresa llave de Cliente: ");
+              System.out.println("\nConsultando Cliente con llave: " + id);
+              // Método para buscar en el CSV
+              break;
+            case 3:
+              int idEdit = entrada("Ingresa la llave de Cliente: ");
+              System.out.println("\nEditando Cliente con llave: " + idEdit);
+              // Método para editar en el CSV
+              break;
+            case 4:
+              int idElim = entrada("Ingresa la llave de Cliente a eliminar: ");
+              System.out.println("\nEliminando Cliente con llave: " + idElim);
+              // Método para eliminar en el CSV
+              break;
+            case 5:
+              volvermenup = true;
+              break;
+            default:
+              System.out.println("\nOpción inválida. Elige un número entre 1 y 5.");
+          }
+        } catch (Exception e) {
+          System.out.println("\nIngresa una entrada válida: " + e.getMessage());
+          scanner.nextLine();
+        }
+      }
+    }
     /**
      * Verifica que la entrada sea un numero entero
      * @param mensaje Mensaje de advertencia.
