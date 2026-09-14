@@ -227,10 +227,10 @@ public class Main {
      */
 private static void agregarSucursal() {
   try {
-    System.out.println("Ingresa los siguientes datos para la nueva sucursal:");
+    System.out.println("Ingresa los siguientes datos para la sucursal:");
 
     int idSucursal = entrada("ID de la Sucursal (debe ser npumero): ");
-    String nombre = entradaTexto("Nombre de la Sucursal: ");
+    String nombreS = entradaTexto("Nombre de la Sucursal: ");
     System.out.println("Direccion completa:");
     String calle = entradaTexto("Calle:  ");
     int numInte = entrada("Número interior: ");
@@ -242,13 +242,40 @@ private static void agregarSucursal() {
 
     // Guardar en el archivo CSV
     try (FileWriter writer = new FileWriter("sucursal.csv", true)) {
-      writer.append(idSucursal + "," + nombre + "," + calle + "," + numInte + "," + numExte + "," + colonia + "," + estado + "," + telefono + "," + horarios + "\n");
+      writer.append(idSucursal + "," + nombreS + "," + calle + "," + numInte + "," + numExte + "," + colonia + "," + estado + "," + telefono + "," + horarios + "\n");
       System.out.println("Sucursal agregada exitosamente.");
     } catch (IOException e) {
       System.out.println("Error al escribir en el archivo CSV: " + e.getMessage());
     }
   } catch (Exception e) {
     System.out.println("Error al agregar la sucursal: " + e.getMessage());
+  } 
+}
+
+/**
+ * Método para agregar premios
+ */
+public static void agregarPremios(){
+  try{
+    System.out.println("Ingresa los siguientes datos para el premio:");
+
+    int idPremio = entrada("ID del Premio (debe ser un número): ");
+    String nombreP = entradaTexto("Nombre del Premio: ");
+    String categoria = entradaTexto("Categoría del Premio: (Bajo, Medio o Alto): ");
+    String rangoEdad = entradaTexto("Rango de Edad (infantil 3-12, juvenil 13-17, adulto 18+): ");
+    int puntos = entrada("Puntos necesarios para canjear el premio: ");
+    int cantidadS = entrada("Cantidad de premios en sucursal: ");
+    int idSucursal = entrada("ID de la Sucursal donde se encuentra el premio: ");
+  
+
+    try(FileWriter writer = new FileWriter("premios.csv", true)) {
+      writer.append(idPremio + "," + nombreP + "," + categoria + "," + rangoEdad + "," + puntos + "," + cantidadS + "," + idSucursal + "\n");
+      System.out.println("Premio agregado exitosamente.");
+    } catch (IOException e) {
+      System.out.println("Error al escribir en el archivo CSV: " + e.getMessage());
+    } 
+  } catch (Exception e) {
+    System.out.println("Error al agregar el premio: " + e.getMessage());
   }
 }
 
