@@ -84,8 +84,7 @@ public class Main {
             agregarSucursal(rutaArchivoSucursales);
             break;
           case 2:
-            long id = entrada("Ingresa llave de Sucursal: ");
-            System.out.println("\nConsultando Sucursal con llave: " + id);
+            consultarSucursal(rutaArchivoSucursales);
             break;
           case 3:
             long idEdit = entrada("Ingresa la llave de Sucursal: ");
@@ -136,11 +135,28 @@ public class Main {
       Sucursal sucursal = new Sucursal(idSucursal, nombre, calle, numExt, numInter, colonia, estado, telefono, horario);
       HandlerCSV.addRegistro(rutaArchivoSucursales, idSucursal, sucursal.toCSV());
 
-      System.out.println("Se agregó con éxito la sucursal con los siguientes datos:");
+      System.out.println("Se agregó con éxito la sucursal a el archivo '" + rutaArchivoSucursales + "' con los siguientes datos:");
       System.out.println(sucursal);
 
     } catch (HorarioException | ArchivoCSVException e) {
       System.out.println(e.getMessage());
+    } catch (Exception e) {
+      System.out.println("Ocurrió algo realmente insperado: " + e.getMessage());
+    }
+  }
+
+  private static void consultarSucursal(String rutaArchivoSucursales) {
+    int idSucursal = (int) entrada("Ingresa llave de Sucursal: ");
+    System.out.println("Mostrando datos de la sucursal con llave '" + idSucursal + "' en el archivo '" + rutaArchivoSucursales + "'.");
+
+    try {
+      String datosSucursal = HandlerCSV.buscarPorId(rutaArchivoSucursales, idSucursal);
+      Sucursal sucursalConsultada = Sucursal.fromCSV(datosSucursal);
+      System.out.println(sucursalConsultada);
+    } catch (ArchivoCSVException e) {
+      System.out.println("Id inválido: " + e.getMessage());
+    } catch (HorarioException | NumberFormatException e) {
+      System.out.println("Datos en formato incorrecto: " + e.getMessage());
     } catch (Exception e) {
       System.out.println("Ocurrió algo realmente insperado: " + e.getMessage());
     }
