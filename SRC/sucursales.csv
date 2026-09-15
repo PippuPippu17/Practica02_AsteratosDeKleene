@@ -1,2 +1,6 @@
 idSucursal,nombre,calle,numExterior,numeroInterior,colonia,estado,telefono,horario
-1,prueba,prueba,10,prueba,prueba,prueba,1010101010,Lun-Mar 00:00-01:00
+1,PuellaGame Coyoacán,Avenida Universidad,1200,L204,Del Valle,Ciudad de México,5556781234,Lun-Vie 11:00-21:00|Sab-Dom 10:00-22:00
+2,PuellaGame Satélite,Circuito Centro Comercial,45,B12,Ciudad Satélite,Estado de México,5553229087,Lun-Jue 12:00-21:00|Vie-Dom 11:00-23:00
+3,PuellaGame Insurgentes,Avenida Insurgentes Sur,1602,S/N,Crédito Constructor,Ciudad de México,5554419876,Lun-Dom 10:00-22:00
+4,PuellaGame Angelópolis,Boulevard del Niño Poblano,2510,L118,Reserva Territorial,Puebla,2222986543,Lun-Vie 11:00-21:00|Sab-Dom 10:00-23:00
+5,PuellaGame Chapalita,Avenida Vallarta,3300,S/N,Vallarta Poniente,Jalisco,3331567842,Lun-Dom 11:00-22:00

@@ -1,8 +1,6 @@
-
 import exceptions.ArchivoCSVException;
 import exceptions.HorarioException;
-import java.io.FileWriter;
-import java.io.IOException;
+import exceptions.RegistroNoEncontradoException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -37,8 +35,10 @@ public class Main {
         System.out.print(mensaje);
         return scanner.nextLong();
       } catch (InputMismatchException e) {
-        System.out.println("Ingresa un numero valido.");
-        scanner.nextLong();
+        // Descartamos el token inválido junto con el resto de la línea.
+        // Si aquí se volviera a llamar a nextLong() la excepción se repetiría.
+        scanner.nextLine();
+        System.out.println("Ingresa un número válido.");
       }
     }
   }
@@ -58,13 +58,6 @@ public class Main {
    * Metodo para gestionar Sucursales.
    */
   private static void gestionarSucursales(String rutaArchivoSucursales) {
-    try {
-      String encabezado = "idSucursal,nombre,calle,numExterior,numeroInterior,colonia,estado,telefono,horario";
-      HandlerCSV.inicializarArchivo(rutaArchivoSucursales, encabezado);
-    } catch (ArchivoCSVException e) {
-      System.out.println(e.getMessage());
-    }
-
     boolean volvermenup = false;
 
     while (!volvermenup) {
@@ -142,25 +135,39 @@ public class Main {
     }
   }
 
+  /**
+   * Solicita la llave de una sucursal, la busca en el archivo CSV y muestra sus
+   * datos completos en consola.
+   *
+   * @param rutaArchivoSucursales Ruta del archivo CSV de sucursales.
+   */
   private static void consultarSucursal(String rutaArchivoSucursales) {
     int idSucursal = (int) entrada("Ingresa la llave de la sucursal a consultar: ");
-    System.out.println(
-        "Mostrando datos de la sucursal con llave '" + idSucursal + "' en el archivo '" + rutaArchivoSucursales + "':");
 
     try {
       String datosSucursal = HandlerCSV.buscarPorId(rutaArchivoSucursales, idSucursal);
       Sucursal sucursalConsultada = Sucursal.fromCSV(datosSucursal);
+
+      System.out.println("Datos de la sucursal con llave '" + idSucursal + "':");
       System.out.println(sucursalConsultada);
 
+    } catch (RegistroNoEncontradoException e) {
+      System.out.println(e.getMessage());
     } catch (ArchivoCSVException e) {
-      System.out.println("Id inválido: " + e.getMessage());
-    } catch (HorarioException | NumberFormatException e) {
-      System.out.println("Datos en formato incorrecto: " + e.getMessage());
+      System.out.println("No se pudo leer el archivo: " + e.getMessage());
+    } catch (HorarioException | IllegalArgumentException e) {
+      System.out.println("El registro está en un formato incorrecto: " + e.getMessage());
     } catch (Exception e) {
-      System.out.println("Ocurrió algo realmente insperado: " + e.getMessage());
+      System.out.println("Ocurrió un error inesperado: " + e.getMessage());
     }
   }
 
+  /**
+   * Solicita la llave de una sucursal y, si existe, pide los nuevos datos para
+   * sobrescribir su registro en el archivo CSV.
+   *
+   * @param rutaArchivoSucursales Ruta del archivo CSV de sucursales.
+   */
   private static void editarSucursal(String rutaArchivoSucursales) {
     String datosSucursal = "";
 
@@ -168,10 +175,15 @@ public class Main {
     int idSucursal = (int) entrada("Ingresa la llave de sucursal a editar: ");
     scanner.nextLine();
 
+    // Si la llave no existe salimos de inmediato, antes de pedirle al usuario
+    // datos que no se van a poder guardar.
     try {
       datosSucursal = HandlerCSV.buscarPorId(rutaArchivoSucursales, idSucursal);
+    } catch (RegistroNoEncontradoException e) {
+      System.out.println(e.getMessage());
+      return;
     } catch (ArchivoCSVException e) {
-      System.out.println("El id '" + idSucursal + "' no se encuentra en el archivo '" + rutaArchivoSucursales + "'.");
+      System.out.println("No se pudo leer el archivo: " + e.getMessage());
       return;
     }
 
@@ -211,26 +223,35 @@ public class Main {
       HandlerCSV.setRegistro(rutaArchivoSucursales, idSucursal, sucursalAEditar.toCSV());
       System.out.println(sucursalAEditar);
 
-    } catch (HorarioException | NumberFormatException e) {
+    } catch (RegistroNoEncontradoException e) {
+      System.out.println(e.getMessage());
+    } catch (ArchivoCSVException e) {
+      System.out.println("No se pudo guardar el registro: " + e.getMessage());
+    } catch (HorarioException | IllegalArgumentException e) {
       System.out.println("Datos en formato incorrecto: " + e.getMessage());
     } catch (Exception e) {
-      System.out.println("Ocurrió algo realmente insperado: " + e.getMessage());
+      System.out.println("Ocurrió un error inesperado: " + e.getMessage());
     }
   }
 
+  /**
+   * Solicita la llave de una sucursal y elimina su registro del archivo CSV.
+   *
+   * @param rutaArchivoSucursales Ruta del archivo CSV de sucursales.
+   */
   private static void eliminarSucursal(String rutaArchivoSucursales) {
     int idSucursal = (int) entrada("Ingresa la llave de la sucursal a borrar: ");
-    System.out.println(
-        "Eliminando los datos de la sucursal con llave '" + idSucursal + "' en el archivo '" + rutaArchivoSucursales
-            + "':");
 
     try {
       HandlerCSV.removeRegistro(rutaArchivoSucursales, idSucursal);
+      System.out.println("Se eliminó la sucursal con llave '" + idSucursal + "'.");
 
+    } catch (RegistroNoEncontradoException e) {
+      System.out.println(e.getMessage());
     } catch (ArchivoCSVException e) {
-      System.out.println("Id inválido: " + e.getMessage());
+      System.out.println("No se pudo modificar el archivo: " + e.getMessage());
     } catch (Exception e) {
-      System.out.println("Ocurrió algo realmente insperado: " + e.getMessage());
+      System.out.println("Ocurrió un error inesperado: " + e.getMessage());
     }
   }
 
@@ -239,13 +260,6 @@ public class Main {
    * Se puede agregar, consultar, editar y eliminar.
    */
   private static void gestionarPremios(String rutaArchivoPremios) {
-    try {
-      String encabezado = "idPremio,nombre,categoria,rangoEdad,puntosRequeridos,valorAproximado,idSucursal,stock";
-      HandlerCSV.inicializarArchivo(rutaArchivoPremios, encabezado);
-    } catch (ArchivoCSVException e) {
-      System.out.println(e.getMessage());
-    }
-
     boolean volvermenup = false;
 
     while (!volvermenup) {
@@ -295,8 +309,8 @@ public class Main {
     int idPremio = (int) entrada("ID del premio (debe ser número): ");
     scanner.nextLine();
     String nombre = entradaTexto("Nombre del premio: ");
-    String categoria = entradaTexto("Categoría ('Infantil', 'Juvenil' o 'Adulto'): ");
-    String rangoEdad = entradaTexto("Rango de Edad ('Bajo', 'Medio' o 'Grande'): ");
+    String categoria = entradaTexto("Categoría ('Bajo', 'Medio' o 'Grande'): ");
+    String rangoEdad = entradaTexto("Rango de Edad ('Infantil', 'Juvenil' o 'Adulto'): ");
     int puntosRequeridos = (int) entrada("Puntos requeridos: ");
     scanner.nextLine();
 
@@ -304,14 +318,15 @@ public class Main {
     double valorAproximado = scanner.nextDouble();
     scanner.nextLine();
 
-    int idSucursal= (int) entrada("ID de la sucursal en la que el premio está disponible (debe ser número): ");
+    int idSucursal = (int) entrada("ID de la sucursal en la que el premio está disponible (debe ser número): ");
     scanner.nextLine();
     int stock = (int) entrada("Número de premios que hay en existencia: ");
     scanner.nextLine();
 
     // Escribir los datos en el archivo CSV
     try {
-      Premio premio = new Premio(idPremio, nombre, categoria, rangoEdad, puntosRequeridos, valorAproximado, idSucursal, stock);
+      Premio premio = new Premio(idPremio, nombre, categoria, rangoEdad, puntosRequeridos, valorAproximado, idSucursal,
+          stock);
       HandlerCSV.addRegistro(rutaArchivoPremios, idPremio, premio.toCSV());
 
       System.out.println(
@@ -323,23 +338,39 @@ public class Main {
     }
   }
 
+  /**
+   * Solicita la llave de un premio, lo busca en el archivo CSV y muestra sus
+   * datos completos en consola.
+   *
+   * @param rutaArchivoPremios Ruta del archivo CSV de premios.
+   */
   private static void consultarPremio(String rutaArchivoPremios) {
     int idPremio = (int) entrada("Ingresa la llave del premio a consultar: ");
-    System.out.println(
-        "Mostrando datos del premio con llave '" + idPremio + "' en el archivo '" + rutaArchivoPremios + "':");
 
     try {
       String datosPremio = HandlerCSV.buscarPorId(rutaArchivoPremios, idPremio);
       Premio premioConsultado = Premio.fromCSV(datosPremio);
+
+      System.out.println("Datos del premio con llave '" + idPremio + "':");
       System.out.println(premioConsultado);
 
+    } catch (RegistroNoEncontradoException e) {
+      System.out.println(e.getMessage());
     } catch (ArchivoCSVException e) {
-      System.out.println("Id inválido: " + e.getMessage());
+      System.out.println("No se pudo leer el archivo: " + e.getMessage());
+    } catch (IllegalArgumentException e) {
+      System.out.println("El registro está en un formato incorrecto: " + e.getMessage());
     } catch (Exception e) {
-      System.out.println("Ocurrió algo realmente insperado: " + e.getMessage());
+      System.out.println("Ocurrió un error inesperado: " + e.getMessage());
     }
   }
 
+  /**
+   * Solicita la llave de un premio y, si existe, pide los nuevos datos para
+   * sobrescribir su registro en el archivo CSV.
+   *
+   * @param rutaArchivoPremios Ruta del archivo CSV de premios.
+   */
   private static void editarPremio(String rutaArchivoPremios) {
     String datosPremio = "";
 
@@ -347,10 +378,15 @@ public class Main {
     int idPremio = (int) entrada("Ingresa la llave del premio a editar: ");
     scanner.nextLine();
 
+    // Si la llave no existe salimos de inmediato, antes de pedirle al usuario
+    // datos que no se van a poder guardar.
     try {
       datosPremio = HandlerCSV.buscarPorId(rutaArchivoPremios, idPremio);
+    } catch (RegistroNoEncontradoException e) {
+      System.out.println(e.getMessage());
+      return;
     } catch (ArchivoCSVException e) {
-      System.out.println("El id '" + idPremio + "' no se encuentra en el archivo '" + rutaArchivoPremios + "'.");
+      System.out.println("No se pudo leer el archivo: " + e.getMessage());
       return;
     }
 
@@ -362,16 +398,16 @@ public class Main {
     // Pedimos los nuevos datos de el premio al usuario y los guardamos en
     // variables.
     String nombre = entradaTexto("Nombre del premio: ");
-    String categoria = entradaTexto("Categoría ('Infantil', 'Juvenil' o 'Adulto'): ");
-    String rangoEdad = entradaTexto("Rango de Edad ('Bajo', 'Medio' o 'Grande'): ");
+    String categoria = entradaTexto("Categoría ('Bajo', 'Medio' o 'Grande'): ");
+    String rangoEdad = entradaTexto("Rango de Edad ('Infantil', 'Juvenil' o 'Adulto'): ");
     int puntosRequeridos = (int) entrada("Puntos requeridos: ");
     scanner.nextLine();
 
     System.out.print("Valor aproximado: ");
     double valorAproximado = scanner.nextDouble();
     scanner.nextLine();
-    
-    int idSucursal= (int) entrada("ID de la sucursal en la que el premio está disponible (debe ser número): ");
+
+    int idSucursal = (int) entrada("ID de la sucursal en la que el premio está disponible (debe ser número): ");
     scanner.nextLine();
     int stock = (int) entrada("Número de premios que hay en existencia: ");
     scanner.nextLine();
@@ -393,43 +429,49 @@ public class Main {
       HandlerCSV.setRegistro(rutaArchivoPremios, idPremio, PremioAEditar.toCSV());
       System.out.println(PremioAEditar);
 
+    } catch (RegistroNoEncontradoException e) {
+      System.out.println(e.getMessage());
+    } catch (ArchivoCSVException e) {
+      System.out.println("No se pudo guardar el registro: " + e.getMessage());
+    } catch (IllegalArgumentException e) {
+      System.out.println("Datos en formato incorrecto: " + e.getMessage());
     } catch (Exception e) {
-      System.out.println("Ocurrió algo realmente insperado: " + e.getMessage());
+      System.out.println("Ocurrió un error inesperado: " + e.getMessage());
     }
   }
 
+  /**
+   * Solicita la llave de un premio y elimina su registro del archivo CSV.
+   *
+   * @param rutaArchivoPremios Ruta del archivo CSV de premios.
+   */
   private static void eliminarPremio(String rutaArchivoPremios) {
-    int idPremio = (int) entrada("Ingresa la llave de la sucursal a borrar: ");
-    System.out.println(
-        "Eliminando los datos del premio con llave '" + idPremio + "' en el archivo '" + rutaArchivoPremios
-            + "':");
+    int idPremio = (int) entrada("Ingresa la llave del premio a borrar: ");
 
     try {
       HandlerCSV.removeRegistro(rutaArchivoPremios, idPremio);
+      System.out.println("Se eliminó el premio con llave '" + idPremio + "'.");
 
+    } catch (RegistroNoEncontradoException e) {
+      System.out.println(e.getMessage());
     } catch (ArchivoCSVException e) {
-      System.out.println("Id inválido: " + e.getMessage());
+      System.out.println("No se pudo modificar el archivo: " + e.getMessage());
     } catch (Exception e) {
-      System.out.println("Ocurrió algo realmente insperado: " + e.getMessage());
+      System.out.println("Ocurrió un error inesperado: " + e.getMessage());
     }
   }
 
   /**
    * Despliega el menú interactivo en consola para la gestión de los Clientes.
-   * Este método inicializa el archivo CSV, creando los encabezados si no existe el archivo 
-   * y permite navergar a traves de las opciones de agregar, consultar, 
+   * Este método inicializa el archivo CSV, creando los encabezados si no existe
+   * el archivo
+   * y permite navergar a traves de las opciones de agregar, consultar,
    * editar y eliminar clientes.
    *
-   * @param rutaArchivoClientes La ruta del archivo CSV donde se almacenan los datos de los clientes.
+   * @param rutaArchivoClientes La ruta del archivo CSV donde se almacenan los
+   *                            datos de los clientes.
    */
   private static void gestionarClientes(String rutaArchivoClientes) {
-    try {
-      String encabezado = "idCliente,nombreCliente,apellidoP,apellidoM,fechaNac,edad,sexo,correoE,telefonoC";
-      HandlerCSV.inicializarArchivo(rutaArchivoClientes, encabezado);
-    } catch (ArchivoCSVException e) {
-      System.out.println(e.getMessage());
-    }
-    
     boolean volvermenup = false;
 
     while (!volvermenup) {
@@ -473,35 +515,40 @@ public class Main {
   }
 
   /**
-   * Solicita al usuario los datos necesarios para registrar un nuevo cliente a través de la consola, 
-   * crea una instancia de Cliente con la información dada y agrega la información al archivo CSV en el archivo especificado.
+   * Solicita al usuario los datos necesarios para registrar un nuevo cliente a
+   * través de la consola,
+   * crea una instancia de Cliente con la información dada y agrega la información
+   * al archivo CSV en el archivo especificado.
    * 
-   * @param rutaArchivoClientes La ruta del archivo CSV donde se guardará el nuevo cliente.
+   * @param rutaArchivoClientes La ruta del archivo CSV donde se guardará el nuevo
+   *                            cliente.
    */
   public static void agregarCliente(String rutaArchivoClientes) {
 
-      System.out.println("Ingresa los datos para el cliente:");
+    System.out.println("Ingresa los datos para el cliente:");
 
-      // Pedir los datos del cliente al usuario y los guardar en variables
-      int idCliente = (int) entrada("ID del cliente (debe ser un número): ");
-      scanner.nextLine();
-      String nombreCliente = entradaTexto("Nombre del cliente: ");
-      String apellidoP = entradaTexto("Apellido paterno: ");
-      String apellidoM = entradaTexto("Apellido materno: ");
-      int fechaNac = (int) entrada("Fecha de nacimiento (DDMMYYYY): ");
-      scanner.nextLine();
-      int edad = (int) entrada("Edad: ");
-      scanner.nextLine();
-      String sexo = entradaTexto("Sexo (H/M/otro): ");
-      String correoE = entradaTexto("Correo electrónico: ");
-      long telefonoC = entrada("Teléfono: ");
+    // Pedir los datos del cliente al usuario y los guardar en variables
+    int idCliente = (int) entrada("ID del cliente (debe ser un número): ");
+    scanner.nextLine();
+    String nombreCliente = entradaTexto("Nombre del cliente: ");
+    String apellidoP = entradaTexto("Apellido paterno: ");
+    String apellidoM = entradaTexto("Apellido materno: ");
+    int fechaNac = (int) entrada("Fecha de nacimiento (DDMMYYYY): ");
+    scanner.nextLine();
+    int edad = (int) entrada("Edad: ");
+    scanner.nextLine();
+    String sexo = entradaTexto("Sexo ('Masculino', 'Femenino' o 'No binario'): ");
+    String correoE = entradaTexto("Correo electrónico: ");
+    long telefonoC = entrada("Teléfono: ");
 
     // Escribir los datos en el archivo CSV
     try {
-      Cliente cliente = new Cliente(idCliente, nombreCliente, apellidoP, apellidoM, fechaNac, edad, sexo, correoE, telefonoC);
+      Cliente cliente = new Cliente(idCliente, nombreCliente, apellidoP, apellidoM, fechaNac, edad, sexo, correoE,
+          telefonoC);
       HandlerCSV.addRegistro(rutaArchivoClientes, idCliente, cliente.toCSV());
 
-      System.out.println("Se agregó el ciente con éxito a el archivo '" + rutaArchivoClientes + "' con los siguientes datos:");
+      System.out.println(
+          "Se agregó el ciente con éxito a el archivo '" + rutaArchivoClientes + "' con los siguientes datos:");
       System.out.println(cliente);
 
     } catch (ArchivoCSVException e) {
@@ -512,35 +559,42 @@ public class Main {
   }
 
   /**
-   * Solicita al usuario el ID de un cliente, lo busca dentro del archivo CSV y, si lo encuentra, reconstruye la 
+   * Solicita al usuario el ID de un cliente, lo busca dentro del archivo CSV y,
+   * si lo encuentra, reconstruye la
    * instancia del cliente para imprimir sus datos en la consola.
    *
-   * @param rutaArchivoClientes La ruta del archivo CSV donde se realizará la búsqueda del cliente.
+   * @param rutaArchivoClientes La ruta del archivo CSV donde se realizará la
+   *                            búsqueda del cliente.
    */
   private static void consultarCliente(String rutaArchivoClientes) {
     int idCliente = (int) entrada("Ingresa llave del Cliente: ");
 
-    System.out.println("Mostrando datos del cliente con llave '" + idCliente + "' en el archivo '" + rutaArchivoClientes + "'.");
-
     try {
       String datosCliente = HandlerCSV.buscarPorId(rutaArchivoClientes, idCliente);
       Cliente clienteConsultado = Cliente.fromCSV(datosCliente);
+
+      System.out.println("Datos del cliente con llave '" + idCliente + "':");
       System.out.println(clienteConsultado);
+
+    } catch (RegistroNoEncontradoException e) {
+      System.out.println(e.getMessage());
     } catch (ArchivoCSVException e) {
-      System.out.println("Id inválido: " + e.getMessage());
-    } catch (NumberFormatException e) {
-      System.out.println("Datos en formato incorrecto: " + e.getMessage());
+      System.out.println("No se pudo leer el archivo: " + e.getMessage());
+    } catch (IllegalArgumentException e) {
+      System.out.println("El registro está en un formato incorrecto: " + e.getMessage());
     } catch (Exception e) {
-      System.out.println("Ocurrió algo realmente insperado: " + e.getMessage());
+      System.out.println("Ocurrió un error inesperado: " + e.getMessage());
     }
   }
 
   /**
-   * Solicita al usuario el ID de un cliente para buscarlo en el archivo. 
-   * Si el cliente existe, pide los nuevos datos por consola, actualiza la información del cliente y sobrescribe 
+   * Solicita al usuario el ID de un cliente para buscarlo en el archivo.
+   * Si el cliente existe, pide los nuevos datos por consola, actualiza la
+   * información del cliente y sobrescribe
    * el registro en el archivo CSV con la nueva información.
    *
-   * @param rutaArchivoClientes La ruta del archivo CSV donde se buscará y actualizará el cliente.
+   * @param rutaArchivoClientes La ruta del archivo CSV donde se buscará y
+   *                            actualizará el cliente.
    */
   private static void editarCliente(String rutaArchivoClientes) {
     String datosCliente = "";
@@ -549,10 +603,15 @@ public class Main {
     int idCliente = (int) entrada("Ingresa la llave del cliente a editar: ");
     scanner.nextLine();
 
+    // Si la llave no existe salimos de inmediato, antes de pedirle al usuario
+    // datos que no se van a poder guardar.
     try {
       datosCliente = HandlerCSV.buscarPorId(rutaArchivoClientes, idCliente);
+    } catch (RegistroNoEncontradoException e) {
+      System.out.println(e.getMessage());
+      return;
     } catch (ArchivoCSVException e) {
-      System.out.println("El id '" + idCliente + "' no se encuentra en el archivo '" + rutaArchivoClientes + "'.");
+      System.out.println("No se pudo leer el archivo: " + e.getMessage());
       return;
     }
 
@@ -569,7 +628,7 @@ public class Main {
     scanner.nextLine();
     int edad = (int) entrada("Edad: ");
     scanner.nextLine();
-    String sexo = entradaTexto("Sexo (H/M/otro): ");
+    String sexo = entradaTexto("Sexo ('Masculino', 'Femenino' o 'No binario'): ");
     String correoE = entradaTexto("Correo Electrónico: ");
     long telefonoC = entrada("Teléfono: ");
     scanner.nextLine();
@@ -592,31 +651,75 @@ public class Main {
       HandlerCSV.setRegistro(rutaArchivoClientes, idCliente, clienteAEditar.toCSV());
       System.out.println(clienteAEditar);
 
-    } catch (NumberFormatException e) {
+    } catch (RegistroNoEncontradoException e) {
+      System.out.println(e.getMessage());
+    } catch (ArchivoCSVException e) {
+      System.out.println("No se pudo guardar el registro: " + e.getMessage());
+    } catch (IllegalArgumentException e) {
       System.out.println("Datos en formato incorrecto: " + e.getMessage());
     } catch (Exception e) {
-      System.out.println("Ocurrió algo realmente insperado: " + e.getMessage());
+      System.out.println("Ocurrió un error inesperado: " + e.getMessage());
     }
   }
 
   /**
-   * Solicita al usuario el ID de un cliente y lo elimina del archivo CSV especificado.
+   * Solicita al usuario el ID de un cliente y lo elimina del archivo CSV
+   * especificado.
    *
-   * @param rutaArchivoClientes La ruta del archivo CSV del cual se eliminará el registro del cliente.
+   * @param rutaArchivoClientes La ruta del archivo CSV del cual se eliminará el
+   *                            registro del cliente.
    */
   private static void eliminarCliente(String rutaArchivoClientes) {
     int idCliente = (int) entrada("Ingresa la llave del cliente a borrar: ");
-    System.out.println(
-        "Eliminando los datos de la sucursal con llave '" + idCliente + "' en el archivo '" + rutaArchivoClientes
-            + "':");
 
     try {
       HandlerCSV.removeRegistro(rutaArchivoClientes, idCliente);
+      System.out.println("Se eliminó el cliente con llave '" + idCliente + "'.");
+
+    } catch (RegistroNoEncontradoException e) {
+      System.out.println(e.getMessage());
+    } catch (ArchivoCSVException e) {
+      System.out.println("No se pudo modificar el archivo: " + e.getMessage());
+    } catch (Exception e) {
+      System.out.println("Ocurrió un error inesperado: " + e.getMessage());
+    }
+  }
+
+  /**
+   * Crea los tres archivos CSV con su encabezado en caso de que no existan.
+   *
+   * Se invoca una única vez al arrancar la aplicación. Si los archivos ya
+   * existen el método no los modifica, de modo que la información capturada en
+   * ejecuciones anteriores se conserva.
+   *
+   * @param rutaArchivoSucursales Ruta del archivo CSV de sucursales.
+   * @param rutaArchivoPremios    Ruta del archivo CSV de premios.
+   * @param rutaArchivoClientes   Ruta del archivo CSV de clientes.
+   * @return true si los tres archivos quedaron listos, false si alguno falló.
+   */
+  private static boolean inicializarArchivos(String rutaArchivoSucursales, String rutaArchivoPremios,
+      String rutaArchivoClientes) {
+    String encabezadoSucursales = "idSucursal,nombre,calle,numExterior,numeroInterior,colonia,estado,telefono,horario";
+    String encabezadoPremios = "idPremio,nombre,categoria,rangoEdad,puntosRequeridos,valorAproximado,idSucursal,stock";
+    String encabezadoClientes = "idCliente,nombreCliente,apellidoP,apellidoM,fechaNac,edad,sexo,correoE,telefonoC";
+
+    try {
+      if (HandlerCSV.inicializarArchivo(rutaArchivoSucursales, encabezadoSucursales)) {
+        System.out.println("Se creó el archivo '" + rutaArchivoSucursales + "'.");
+      }
+      if (HandlerCSV.inicializarArchivo(rutaArchivoPremios, encabezadoPremios)) {
+        System.out.println("Se creó el archivo '" + rutaArchivoPremios + "'.");
+      }
+      if (HandlerCSV.inicializarArchivo(rutaArchivoClientes, encabezadoClientes)) {
+        System.out.println("Se creó el archivo '" + rutaArchivoClientes + "'.");
+      }
+
+      return true;
 
     } catch (ArchivoCSVException e) {
-      System.out.println("Id inválido: " + e.getMessage());
-    } catch (Exception e) {
-      System.out.println("Ocurrió algo realmente insperado: " + e.getMessage());
+      System.out.println("No se pudieron preparar los archivos de datos: " + e.getMessage());
+      System.out.println("Revisa que exista la carpeta 'SRC' y que tengas permisos de escritura.");
+      return false;
     }
   }
 
@@ -629,6 +732,13 @@ public class Main {
     String rutaArchivoSucursales = "./SRC/sucursales.csv";
     String rutaArchivoClientes = "./SRC/clientes.csv";
     String rutaArchivoPremios = "./SRC/premios.csv";
+
+    // Los archivos se preparan una sola vez, al arrancar la aplicación.
+    // Si alguno no puede crearse no tiene sentido continuar.
+    if (!inicializarArchivos(rutaArchivoSucursales, rutaArchivoPremios, rutaArchivoClientes)) {
+      return;
+    }
+
     boolean salir = false;
     // Bucle hasta que el usuario decida cerrar la app
     while (!salir) {

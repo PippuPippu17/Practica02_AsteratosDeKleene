@@ -1,2 +1,9 @@
 idCliente,nombreCliente,apellidoP,apellidoM,fechaNac,edad,sexo,correoE,telefonoC
-1,Prueba,Prueba,Prueba,1012001,25,H,prueba@gmail.com,10101010
+1,Ana Sofía,Márquez,Ríos,15032001,25,Femenino,ana.marquez@example.com,5512345678
+2,Luis Fernando,Hernández,Gómez,22071998,28,Masculino,luis.hernandez@example.com,5523456789
+3,Camila,Torres,Vega,10112010,15,Femenino,camila.torres@example.com,5534567890
+4,Diego,Ramírez,Solís,28022014,12,Masculino,diego.ramirez@example.com,5545678901
+5,Renata,Castillo,Núñez,19091995,30,No binario,renata.castillo@example.com,5556789012
+6,Mateo,Flores,Aguilar,11062007,19,Masculino,mateo.flores@example.com,5567890123
+7,Valeria,Ortiz,Medina,25121989,36,Femenino,valeria.ortiz@example.com,5578901234
+8,Emiliano,Navarro,Cruz,14042013,13,Masculino,emiliano.navarro@example.com,5589012345
