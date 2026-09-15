@@ -415,10 +415,21 @@ public class Main {
   }
 
   /**
-   * Metodo para gestionar Clientes.
-   * Se puede agregar, consultar, editar y eliminar.
+   * Despliega el menú interactivo en consola para la gestión de los Clientes.
+   * Este método inicializa el archivo CSV, creando los encabezados si no existe el archivo 
+   * y permite navergar a traves de las opciones de agregar, consultar, 
+   * editar y eliminar clientes.
+   *
+   * @param rutaArchivoClientes La ruta del archivo CSV donde se almacenan los datos de los clientes.
    */
-  private static void gestionarClientes() {
+  private static void gestionarClientes(String rutaArchivoClientes) {
+    try {
+      String encabezado = "idCliente,nombreCliente,apellidoP,apellidoM,fechaNac,edad,sexo,correoE,telefonoC";
+      HandlerCSV.inicializarArchivo(rutaArchivoClientes, encabezado);
+    } catch (ArchivoCSVException e) {
+      System.out.println(e.getMessage());
+    }
+    
     boolean volvermenup = false;
 
     while (!volvermenup) {
@@ -435,22 +446,16 @@ public class Main {
 
         switch (opcion) {
           case 1:
-            agregarCliente();
+            agregarCliente(rutaArchivoClientes);
             break;
           case 2:
-            long id = entrada("Ingresa llave de Cliente: ");
-            System.out.println("\nConsultando Cliente con llave: " + id);
-            // Método para buscar en el CSV
+            consultarCliente(rutaArchivoClientes);
             break;
           case 3:
-            long idEdit = entrada("Ingresa la llave de Cliente: ");
-            System.out.println("\nEditando Cliente con llave: " + idEdit);
-            // Método para editar en el CSV
+            editarCliente(rutaArchivoClientes);
             break;
           case 4:
-            long idElim = entrada("Ingresa la llave de Cliente a eliminar: ");
-            System.out.println("\nEliminando Cliente con llave: " + idElim);
-            // Método para eliminar en el CSV
+            eliminarCliente(rutaArchivoClientes);
             break;
           case 5:
             // Fuga
@@ -468,37 +473,150 @@ public class Main {
   }
 
   /**
-   * Método para agregar clientes
+   * Solicita al usuario los datos necesarios para registrar un nuevo cliente a través de la consola, 
+   * crea una instancia de Cliente con la información dada y agrega la información al archivo CSV en el archivo especificado.
+   * 
+   * @param rutaArchivoClientes La ruta del archivo CSV donde se guardará el nuevo cliente.
    */
-  public static void agregarCliente() {
-    try {
-      System.out.println("Ingresa los siguientes datos para el cliente:");
+  public static void agregarCliente(String rutaArchivoClientes) {
+
+      System.out.println("Ingresa los datos para el cliente:");
 
       // Pedir los datos del cliente al usuario y los guardar en variables
-      long idCliente = entrada("ID del cliente (debe ser un número): ");
+      int idCliente = (int) entrada("ID del cliente (debe ser un número): ");
       scanner.nextLine();
-      String nombreC = entradaTexto("Nombre del cliente: ");
+      String nombreCliente = entradaTexto("Nombre del cliente: ");
       String apellidoP = entradaTexto("Apellido paterno: ");
       String apellidoM = entradaTexto("Apellido materno: ");
-      long fechaNac = entrada("Fecha de nacimiento (DDMMYYYY): ");
+      int fechaNac = (int) entrada("Fecha de nacimiento (DDMMYYYY): ");
       scanner.nextLine();
-      long edad = entrada("Edad:");
+      int edad = (int) entrada("Edad: ");
       scanner.nextLine();
       String sexo = entradaTexto("Sexo (H/M/otro): ");
       String correoE = entradaTexto("Correo electrónico: ");
       long telefonoC = entrada("Teléfono: ");
 
-      // Escribir los datos en el archivo CSV
-      try (FileWriter writer = new FileWriter("clientes.csv", true)) {
-        writer.append(idCliente + "," + nombreC + "," + apellidoP + "," + apellidoM + "," + fechaNac + "," + edad + ","
-            + sexo + "," + correoE + "," + telefonoC + "\n");
-        System.out.println("Cliente agregado exitosamente.");
-      } catch (IOException e) {
-        System.out.println("Error al escribir en el archivo CSV: " + e.getMessage());
-      }
-      // Manejo de excepciones
+    // Escribir los datos en el archivo CSV
+    try {
+      Cliente cliente = new Cliente(idCliente, nombreCliente, apellidoP, apellidoM, fechaNac, edad, sexo, correoE, telefonoC);
+      HandlerCSV.addRegistro(rutaArchivoClientes, idCliente, cliente.toCSV());
+
+      System.out.println("Se agregó el ciente con éxito a el archivo '" + rutaArchivoClientes + "' con los siguientes datos:");
+      System.out.println(cliente);
+
+    } catch (ArchivoCSVException e) {
+      System.out.println(e.getMessage());
     } catch (Exception e) {
-      System.out.println("Error al agregar el cliente: " + e.getMessage());
+      System.out.println("Ocurrió algo realmente insperado: " + e.getMessage());
+    }
+  }
+
+  /**
+   * Solicita al usuario el ID de un cliente, lo busca dentro del archivo CSV y, si lo encuentra, reconstruye la 
+   * instancia del cliente para imprimir sus datos en la consola.
+   *
+   * @param rutaArchivoClientes La ruta del archivo CSV donde se realizará la búsqueda del cliente.
+   */
+  private static void consultarCliente(String rutaArchivoClientes) {
+    int idCliente = (int) entrada("Ingresa llave del Cliente: ");
+
+    System.out.println("Mostrando datos del cliente con llave '" + idCliente + "' en el archivo '" + rutaArchivoClientes + "'.");
+
+    try {
+      String datosCliente = HandlerCSV.buscarPorId(rutaArchivoClientes, idCliente);
+      Cliente clienteConsultado = Cliente.fromCSV(datosCliente);
+      System.out.println(clienteConsultado);
+    } catch (ArchivoCSVException e) {
+      System.out.println("Id inválido: " + e.getMessage());
+    } catch (NumberFormatException e) {
+      System.out.println("Datos en formato incorrecto: " + e.getMessage());
+    } catch (Exception e) {
+      System.out.println("Ocurrió algo realmente insperado: " + e.getMessage());
+    }
+  }
+
+  /**
+   * Solicita al usuario el ID de un cliente para buscarlo en el archivo. 
+   * Si el cliente existe, pide los nuevos datos por consola, actualiza la información del cliente y sobrescribe 
+   * el registro en el archivo CSV con la nueva información.
+   *
+   * @param rutaArchivoClientes La ruta del archivo CSV donde se buscará y actualizará el cliente.
+   */
+  private static void editarCliente(String rutaArchivoClientes) {
+    String datosCliente = "";
+
+    // Solicitamos la llave
+    int idCliente = (int) entrada("Ingresa la llave del cliente a editar: ");
+    scanner.nextLine();
+
+    try {
+      datosCliente = HandlerCSV.buscarPorId(rutaArchivoClientes, idCliente);
+    } catch (ArchivoCSVException e) {
+      System.out.println("El id '" + idCliente + "' no se encuentra en el archivo '" + rutaArchivoClientes + "'.");
+      return;
+    }
+
+    System.out.println(
+        "Ingresa los nuevos datos para el cliente con llave '" + idCliente + "' en el archivo '"
+            + rutaArchivoClientes
+            + "':");
+
+    // Pedimos los nuevos datos del cliente al usuario y los guardamos en variables.
+    String nombreCliente = entradaTexto("Nombre del cliente: ");
+    String apellidoP = entradaTexto("Apellido Paterno: ");
+    String apellidoM = entradaTexto("Apellido Materno: ");
+    int fechaNac = (int) entrada("Fecha de Nacimiento (DDMMYYYY): ");
+    scanner.nextLine();
+    int edad = (int) entrada("Edad: ");
+    scanner.nextLine();
+    String sexo = entradaTexto("Sexo (H/M/otro): ");
+    String correoE = entradaTexto("Correo Electrónico: ");
+    long telefonoC = entrada("Teléfono: ");
+    scanner.nextLine();
+
+    try {
+      Cliente clienteAEditar = Cliente.fromCSV(datosCliente);
+
+      // Pedir los datos del cliente al usuario y los guardamos en variables
+      clienteAEditar.setNombreCliente(nombreCliente);
+      clienteAEditar.setApellidoP(apellidoP);
+      clienteAEditar.setApellidoM(apellidoM);
+      clienteAEditar.setFechaNac(fechaNac);
+      clienteAEditar.setEdad(edad);
+      clienteAEditar.setSexo(sexo);
+      clienteAEditar.setCorreoE(correoE);
+      clienteAEditar.setTelefonoC(telefonoC);
+
+      System.out.println("Los nuevos datos del cliente con id '" + idCliente + "' en el archivo '"
+          + rutaArchivoClientes + "' son:");
+      HandlerCSV.setRegistro(rutaArchivoClientes, idCliente, clienteAEditar.toCSV());
+      System.out.println(clienteAEditar);
+
+    } catch (NumberFormatException e) {
+      System.out.println("Datos en formato incorrecto: " + e.getMessage());
+    } catch (Exception e) {
+      System.out.println("Ocurrió algo realmente insperado: " + e.getMessage());
+    }
+  }
+
+  /**
+   * Solicita al usuario el ID de un cliente y lo elimina del archivo CSV especificado.
+   *
+   * @param rutaArchivoClientes La ruta del archivo CSV del cual se eliminará el registro del cliente.
+   */
+  private static void eliminarCliente(String rutaArchivoClientes) {
+    int idCliente = (int) entrada("Ingresa la llave del cliente a borrar: ");
+    System.out.println(
+        "Eliminando los datos de la sucursal con llave '" + idCliente + "' en el archivo '" + rutaArchivoClientes
+            + "':");
+
+    try {
+      HandlerCSV.removeRegistro(rutaArchivoClientes, idCliente);
+
+    } catch (ArchivoCSVException e) {
+      System.out.println("Id inválido: " + e.getMessage());
+    } catch (Exception e) {
+      System.out.println("Ocurrió algo realmente insperado: " + e.getMessage());
     }
   }
 
@@ -528,7 +646,7 @@ public class Main {
             gestionarPremios(rutaArchivoPremios);
             break;
           case 3:
-            gestionarClientes();
+            gestionarClientes(rutaArchivoClientes);
             break;
           case 4:
             // Cierra la app, que triste, el usuario ya no la va a usar chale ni modo
