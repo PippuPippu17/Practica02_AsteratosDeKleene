@@ -1,7 +1,7 @@
 /**
  * Esta clase representa a la entidad Cliente.
  */
-public class Cliente {
+public class Cliente implements Registrable {
 
   private int idCliente;
   private String nombreCliente;
@@ -289,4 +289,15 @@ public class Cliente {
         "Teléfono\t \t: " + telefonoC + "\n" +
         "----------------------------------------------------------------------------------------";
   }
+
+  /**
+   * Regresa la llave que identifica a el cliente dentro de su archivo CSV.
+   *
+   * @return La llave del cliente.
+   */
+  @Override
+  public int getLlave() {
+    return this.idCliente;
+  }
+
 }

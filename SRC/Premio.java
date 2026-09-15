@@ -1,6 +1,6 @@
 import java.util.Locale;
 
-public class Premio {
+public class Premio implements Registrable {
   private int idPremio;
   private String nombre;
   private String categoria;
@@ -109,7 +109,15 @@ public class Premio {
         String.valueOf(this.stock));
   }
 
-  public static Premio fromCSV(String lineaCSV) throws Exception {
+  /**
+   * Reconstruye una instancia de Premio a partir de una línea del archivo CSV.
+   *
+   * @param lineaCSV Línea del archivo con los datos de un premio.
+   * @return Una nueva instancia de Premio con los datos de la línea.
+   * @throws IllegalArgumentException Si la línea no tiene todas las columnas.
+   * @throws NumberFormatException    Si alguna columna numérica no lo es.
+   */
+  public static Premio fromCSV(String lineaCSV) throws IllegalArgumentException, NumberFormatException {
     String[] datos = CSVUtil.parsear(lineaCSV);
     if (datos.length < 8) {
       throw new IllegalArgumentException("Error: la línea CSV no tiene todas las columnas que necestiamos.");
@@ -140,4 +148,15 @@ public class Premio {
         "Stock\t\t\t: " + stock + " disponibles\n" +
         "---------------------------------------------------------------------------------------";
   }
+
+  /**
+   * Regresa la llave que identifica a el premio dentro de su archivo CSV.
+   *
+   * @return La llave del premio.
+   */
+  @Override
+  public int getLlave() {
+    return this.idPremio;
+  }
+
 }

@@ -1,0 +1,80 @@
+/**
+ * Menú que administra las sucursales del centro de entretenimiento.
+ *
+ * Hereda de {@link MenuEntidad} todo el flujo del CRUD y el manejo de
+ * excepciones, y aquí solo se define qué datos se capturan y cómo se
+ * reconstruye
+ * una sucursal a partir de una línea del archivo CSV.
+ */
+public class MenuSucursales extends MenuEntidad<Sucursal> {
+
+  /**
+   * Construye el menú de sucursales.
+   *
+   * @param rutaArchivo Ruta del archivo CSV de sucursales.
+   */
+  public MenuSucursales(String rutaArchivo) {
+    super(rutaArchivo, "sucursal", "Sucursales");
+  }
+
+  /**
+   * Pide por consola todos los datos de una sucursal nueva.
+   *
+   * @return La sucursal capturada.
+   * @throws Exception Si el horario capturado no es válido.
+   */
+  @Override
+  protected Sucursal capturar() throws Exception {
+    int llave = EntradaConsola.leerEntero("Llave de la sucursal (debe ser número): ");
+
+    return construir(llave);
+  }
+
+  /**
+   * Pide por consola los datos nuevos de una sucursal existente.
+   *
+   * La llave no se vuelve a preguntar, ya que es la que identifica al registro
+   * que se está editando.
+   *
+   * @param llave    Llave de la sucursal que se edita.
+   * @param original Sucursal tal como está guardada.
+   * @return La sucursal con los datos nuevos.
+   * @throws Exception Si el horario capturado no es válido.
+   */
+  @Override
+  protected Sucursal capturarEdicion(int llave, Sucursal original) throws Exception {
+    return construir(llave);
+  }
+
+  /**
+   * Reconstruye una sucursal a partir de una línea del archivo CSV.
+   *
+   * @param lineaCSV Línea leída del archivo.
+   * @return La sucursal reconstruida.
+   * @throws Exception Si la línea no tiene el formato esperado.
+   */
+  @Override
+  protected Sucursal desdeCSV(String lineaCSV) throws Exception {
+    return Sucursal.fromCSV(lineaCSV);
+  }
+
+  /**
+   * Captura los campos comunes al alta y a la edición de una sucursal.
+   *
+   * @param llave Llave que llevará la sucursal.
+   * @return La sucursal construida con los datos capturados.
+   * @throws Exception Si el horario capturado no es válido.
+   */
+  private Sucursal construir(int llave) throws Exception {
+    String nombre = EntradaConsola.leerTexto("Nombre de la sucursal: ");
+    String calle = EntradaConsola.leerTexto("Calle: ");
+    int numExterior = EntradaConsola.leerEntero("Número exterior: ", 1, 99999);
+    String numInterior = EntradaConsola.leerTextoOpcional("Número interior (deja vacío si no aplica): ", "S/N");
+    String colonia = EntradaConsola.leerTexto("Colonia: ");
+    String estado = EntradaConsola.leerTexto("Estado: ");
+    long telefono = EntradaConsola.leerTelefono("Teléfono (10 dígitos): ");
+    String horario = EntradaConsola.leerHorario("Horario (ejemplo: Lun-Vie 11:00-21:00|Sab-Dom 10:00-22:00): ");
+
+    return new Sucursal(llave, nombre, calle, numExterior, numInterior, colonia, estado, telefono, horario);
+  }
+}

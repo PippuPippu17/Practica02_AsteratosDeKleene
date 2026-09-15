@@ -1,6 +1,6 @@
 import exceptions.HorarioException;
 
-public class Sucursal {
+public class Sucursal implements Registrable {
   private int idSucursal;
   private String nombre;
   private String calle;
@@ -174,4 +174,15 @@ public class Sucursal {
         "Horario\t \t: " + horario.toString() + "\n" +
         "----------------------------------------------------------------------------------------";
   }
+
+  /**
+   * Regresa la llave que identifica a la sucursal dentro de su archivo CSV.
+   *
+   * @return La llave de la sucursal.
+   */
+  @Override
+  public int getLlave() {
+    return this.idSucursal;
+  }
+
 }
