@@ -21,3 +21,11 @@ make run
 ```bash
 make doc
 ```
+
+### Usar el siguiente comando entre ejecuciones del programa:
+
+```bash
+make clean
+```
+
+
