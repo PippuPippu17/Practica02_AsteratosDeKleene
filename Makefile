@@ -6,18 +6,14 @@
 #    make            Compila el proyecto (equivale a 'make compile').
 #    make run        Compila y ejecuta la aplicación.
 #    make doc        Genera la documentación Javadoc en SRC/Doc/.
-#    make zip        Arma el archivo de entrega con la estructura solicitada.
 #    make clean      Borra los .class y la documentación generada.
 #    make help       Muestra esta ayuda.
 # =============================================================================
 
 # ---------------------------------------------------------------- Variables --
-EQUIPO   := AsteratosDeKleene
 SRC      := SRC
-DOCS     := Docs
 DOC_DIR  := $(SRC)/Doc
 MAIN     := Main
-ZIP      := Practica02_$(EQUIPO).zip
 
 JAVAC        := javac
 JAVA         := java
@@ -41,7 +37,7 @@ CLASES  := $(FUENTES:.java=.class)
 STAMP := $(SRC)/.build
 
 # ------------------------------------------------------------------ Objetivos --
-.PHONY: all compile run doc zip clean help
+.PHONY: all compile run doc clean help
 .DEFAULT_GOAL := compile
 
 all: compile doc
@@ -71,21 +67,11 @@ $(DOC_DIR)/index.html: $(FUENTES)
 	@$(JAVADOC) $(JAVADOCFLAGS) -d $(DOC_DIR) $(FUENTES)
 	@echo ">> Documentación generada."
 
-## zip: arma el entregable con la estructura que pide la práctica.
-zip: compile doc
-	@echo ">> Empaquetando $(ZIP)..."
-	@rm -f $(ZIP)
-	@zip -qr $(ZIP) $(SRC) $(wildcard $(DOCS)) $(wildcard README_*.pdf) \
-		-x '*.DS_Store' '*/.git/*' '$(SRC)/.build'
-	@echo ">> Listo: $(ZIP)"
-	@unzip -l $(ZIP) | tail -n +2
-
 ## clean: borra los .class y la documentación generada.
 clean:
 	@echo ">> Limpiando archivos generados..."
 	@rm -f $(SRC)/*.class $(SRC)/exceptions/*.class $(STAMP)
 	@rm -rf $(DOC_DIR)
-	@rm -f $(ZIP)
 	@echo ">> Listo."
 
 ## help: muestra los objetivos disponibles.
@@ -95,5 +81,4 @@ help:
 	@echo "  make run       Compila y ejecuta la aplicación."
 	@echo "  make doc       Genera el Javadoc en $(DOC_DIR)/."
 	@echo "  make all       Compila y genera la documentación."
-	@echo "  make zip       Arma $(ZIP) con la estructura de entrega."
-	@echo "  make clean     Borra .class, documentación y el zip."
+	@echo "  make clean     Borra los .class y la documentación."
