@@ -87,8 +87,7 @@ public class Main {
             consultarSucursal(rutaArchivoSucursales);
             break;
           case 3:
-            long idEdit = entrada("Ingresa la llave de Sucursal: ");
-            System.out.println("\nEditando Sucursal con llave: " + idEdit);
+            editarSucursal(rutaArchivoSucursales);
             // Método para editar en el CSV
             break;
           case 4:
@@ -135,7 +134,8 @@ public class Main {
       Sucursal sucursal = new Sucursal(idSucursal, nombre, calle, numExt, numInter, colonia, estado, telefono, horario);
       HandlerCSV.addRegistro(rutaArchivoSucursales, idSucursal, sucursal.toCSV());
 
-      System.out.println("Se agregó con éxito la sucursal a el archivo '" + rutaArchivoSucursales + "' con los siguientes datos:");
+      System.out.println(
+          "Se agregó con éxito la sucursal a el archivo '" + rutaArchivoSucursales + "' con los siguientes datos:");
       System.out.println(sucursal);
 
     } catch (HorarioException | ArchivoCSVException e) {
@@ -147,14 +147,72 @@ public class Main {
 
   private static void consultarSucursal(String rutaArchivoSucursales) {
     int idSucursal = (int) entrada("Ingresa llave de Sucursal: ");
-    System.out.println("Mostrando datos de la sucursal con llave '" + idSucursal + "' en el archivo '" + rutaArchivoSucursales + "'.");
+    System.out.println(
+        "Mostrando datos de la sucursal con llave '" + idSucursal + "' en el archivo '" + rutaArchivoSucursales + "':");
 
     try {
       String datosSucursal = HandlerCSV.buscarPorId(rutaArchivoSucursales, idSucursal);
       Sucursal sucursalConsultada = Sucursal.fromCSV(datosSucursal);
       System.out.println(sucursalConsultada);
+
     } catch (ArchivoCSVException e) {
       System.out.println("Id inválido: " + e.getMessage());
+    } catch (HorarioException | NumberFormatException e) {
+      System.out.println("Datos en formato incorrecto: " + e.getMessage());
+    } catch (Exception e) {
+      System.out.println("Ocurrió algo realmente insperado: " + e.getMessage());
+    }
+  }
+
+  private static void editarSucursal(String rutaArchivoSucursales) {
+    String datosSucursal = "";
+
+    // Solicitamos la llave.
+    int idSucursal = (int) entrada("Ingresa la llave de Sucursal: ");
+    scanner.nextLine();
+
+    try {
+        datosSucursal = HandlerCSV.buscarPorId(rutaArchivoSucursales, idSucursal);
+    } catch (ArchivoCSVException e) {
+      System.out.println("El id '" + idSucursal + "' no se encuentra en el archivo '" + rutaArchivoSucursales + "'.");
+      return;
+    }
+
+    System.out.println(
+        "Ingresa los nuevos datos para la sucursal con llave '" + idSucursal + "' en el archivo '"
+            + rutaArchivoSucursales
+            + "':");
+
+    // Pedimos los nuevos datos de la sucursal al usuario y los guardamos en variables.
+    String nombre = entradaTexto("Nombre de la Sucursal: ");
+    String calle = entradaTexto("Calle: ");
+    int numExt = (int) entrada("Número exterior: ");
+    scanner.nextLine();
+    String numInter = entradaTexto("Número interior: ");
+    String colonia = entradaTexto("Colonia: ");
+    String estado = entradaTexto("Estado: ");
+    long telefono = entrada("Teléfono: ");
+    scanner.nextLine();
+    String horario = entradaTexto("Horario: ");
+
+    try {
+      Sucursal sucursalAEditar = Sucursal.fromCSV(datosSucursal);
+
+      // Pedir los datos de la sucursal al usuario y los guardamos en variables
+      sucursalAEditar.setNombre(nombre);
+      sucursalAEditar.setCalle(calle);
+      sucursalAEditar.setNumExterior(numExt);
+      sucursalAEditar.setNumeroInterior(numInter);
+      sucursalAEditar.setColonia(colonia);
+      sucursalAEditar.setEstado(estado);
+      sucursalAEditar.setTelefono(telefono);
+      sucursalAEditar.setHorario(horario);
+
+      System.out.println("Los nuevos datos de la sucursal con id '" + idSucursal + "' en el archivo '"
+          + rutaArchivoSucursales + "' son:");
+      HandlerCSV.setRegistro(rutaArchivoSucursales, idSucursal, sucursalAEditar.toCSV());
+      System.out.println(sucursalAEditar);
+
     } catch (HorarioException | NumberFormatException e) {
       System.out.println("Datos en formato incorrecto: " + e.getMessage());
     } catch (Exception e) {
