@@ -19,6 +19,13 @@ import java.util.List;
 public class HandlerCSV {
 
   /**
+   * Constructor privado para impedir que la clase se instancie, ya que solo
+   * ofrece métodos estáticos.
+   */
+  private HandlerCSV() {
+  }
+
+  /**
    * Crea el archivo CSV con el encabezado indicado en caso de que aún no exista.
    *
    * El método es idempotente: si el archivo ya existe con contenido no hace nada

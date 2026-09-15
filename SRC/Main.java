@@ -12,6 +12,13 @@ import exceptions.ArchivoCSVException;
  */
 public class Main {
 
+  /**
+   * Constructor privado para impedir que la clase se instancie, ya que solo
+   * sirve como punto de entrada de la aplicación.
+   */
+  private Main() {
+  }
+
   /** Ruta del archivo CSV donde se guardan las sucursales. */
   private static final String RUTA_SUCURSALES = "./SRC/sucursales.csv";
 

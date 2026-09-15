@@ -14,9 +14,16 @@
  */
 public class InventarioPremio implements Registrable {
 
+  /** Identificador propio del renglón, usado como llave en el archivo CSV. */
   private int idInventario;
+
+  /** Llave de la sucursal que tiene el premio en existencia. */
   private int idSucursal;
+
+  /** Llave del premio del que se lleva la existencia. */
   private int idPremio;
+
+  /** Cantidad de piezas del premio que hay en esa sucursal. */
   private int cantidadDisponible;
 
   /**

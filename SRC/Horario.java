@@ -15,11 +15,25 @@ import java.util.List;
  * en formato de veinticuatro horas.
  */
 public class Horario {
+
+  /** Abreviaturas válidas de los días, en el orden en que corren en la semana. */
   public static final List<String> DIAS_VALIDOS = List.of("Lun", "Mar", "Mie", "Jue", "Vie", "Sab", "Dom");
 
+  /** Texto del horario tal como lo capturó el usuario. */
   private String horario = "";
+
+  /** Días a los que todavía no se les ha asignado un rango de horas. */
   private List<String> diasDisponibles = new ArrayList<>(DIAS_VALIDOS);
 
+  /**
+   * Construye un horario a partir de su representación en texto y lo valida.
+   *
+   * @param horario Horario con el formato 'Dia-Dia HH:MM-HH:MM', que puede
+   *                encadenar varios rangos separados con el carácter '|'.
+   * @throws HorarioException Si el horario está vacío, si algún día no existe, si
+   *                          los días no van en orden, si un día recibe dos
+   *                          rangos o si alguna hora está fuera de rango.
+   */
   public Horario(String horario) throws HorarioException {
     if (horario == null || horario.trim().isEmpty()) {
       throw new HorarioException("No puedes ingresar un horario vacío.");
@@ -92,6 +106,16 @@ public class Horario {
     this.horario = horario;
   }
 
+  /**
+   * Valida la sección de los días de un rango y regresa sus posiciones.
+   *
+   * Comprueba que los dos días existan, que el inicial sea anterior al final y
+   * que ninguno de ellos tenga ya un horario asignado.
+   *
+   * @param dias Sección de días con el formato 'Dia-Dia'.
+   * @return Arreglo con la posición del día inicial y la del día final.
+   * @throws HorarioException Si los días no son válidos o ya fueron usados.
+   */
   private int[] getRangoDeDiasValido(String dias) throws HorarioException {
     if (dias == null || dias.trim().isEmpty()) {
       throw new HorarioException("La sección de los días no puede estar vacía.");
@@ -166,6 +190,15 @@ public class Horario {
     return rangoValidoDeDias;
   }
 
+  /**
+   * Valida la sección de las horas de un rango.
+   *
+   * Comprueba el formato, que las horas y los minutos estén dentro de su rango y
+   * que la hora de cierre sea posterior a la de apertura.
+   *
+   * @param horas Sección de horas con el formato 'HH:MM-HH:MM'.
+   * @throws HorarioException Si el formato o los valores no son válidos.
+   */
   private void verificarRangoDeHoras(String horas) throws HorarioException {
     if (horas == null || horas.trim().isEmpty()) {
       throw new HorarioException("La sección de la hora no puede estar vacía.");
@@ -217,6 +250,14 @@ public class Horario {
     }
   }
 
+  /**
+   * Separa una hora en sus dos componentes numéricas y las valida.
+   *
+   * @param hora Hora con el formato 'HH:MM'.
+   * @return Arreglo con la hora y el minuto.
+   * @throws HorarioException Si el formato no es válido o los valores están fuera
+   *                          de rango.
+   */
   private int[] obtenerHoraYMinuto(String hora) throws HorarioException {
     if (hora == null || hora.trim().isEmpty()) {
       throw new HorarioException("La sección de la hora no puede tener una hora vacía.");

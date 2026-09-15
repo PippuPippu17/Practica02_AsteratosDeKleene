@@ -28,13 +28,28 @@ public class Cliente implements Registrable {
   /** Carácter que separa los valores dentro de una columna multivaluada. */
   public static final String SEPARADOR_MULTIVALUADO = ";";
 
+  /** Identificador único del cliente. */
   private int idCliente;
+
+  /** Nombre o nombres de pila del cliente. */
   private String nombreCliente;
+
+  /** Apellido paterno del cliente. */
   private String apellidoP;
+
+  /** Apellido materno del cliente. */
   private String apellidoM;
+
+  /** Fecha de nacimiento con formato DD/MM/AAAA. */
   private String fechaNac;
+
+  /** Sexo o género del cliente: "Masculino", "Femenino" o "No binario". */
   private String sexo;
+
+  /** Correos electrónicos de contacto. Es un atributo multivaluado. */
   private List<String> correos;
+
+  /** Números telefónicos de contacto. Es un atributo multivaluado. */
   private List<String> telefonos;
 
   /**

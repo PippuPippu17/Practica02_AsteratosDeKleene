@@ -27,8 +27,10 @@ JAVA_RELEASE := 21
 # Los mensajes de la aplicación llevan acentos, así que fijamos el encoding
 # de forma explícita para no depender de la configuración de cada máquina.
 JAVACFLAGS   := -encoding UTF-8 --release $(JAVA_RELEASE) -Xlint:-serial
+# -Xdoclint:all obliga a que toda clase, método y campo tenga su documentación.
+# Si se agrega algo sin documentar, 'make doc' lo reporta como advertencia.
 JAVADOCFLAGS := -encoding UTF-8 -charset UTF-8 -docencoding UTF-8 \
-                -private -quiet -Xdoclint:none
+                -private -quiet -Xdoclint:all
 
 # Fuentes y clases. Los .class se dejan junto a los .java porque así lo pide
 # el diagrama de entregables de la práctica.
