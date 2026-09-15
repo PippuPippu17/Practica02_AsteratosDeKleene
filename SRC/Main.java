@@ -78,6 +78,7 @@ public class Main {
 
         long opcionInt = entrada("Selecciona una operación: ");
         int opcion = (int) opcionInt;
+        System.out.println();
 
         switch (opcion) {
           case 1:
@@ -88,12 +89,9 @@ public class Main {
             break;
           case 3:
             editarSucursal(rutaArchivoSucursales);
-            // Método para editar en el CSV
             break;
           case 4:
-            long idElim = entrada("Ingresa la llave de Sucursal a eliminar: ");
-            System.out.println("\nEliminando Sucursal con llave: " + idElim);
-            // Método para eliminar en el CSV
+            eliminarSucursal(rutaArchivoSucursales);
             break;
           case 5:
             volvermenup = true;
@@ -112,8 +110,7 @@ public class Main {
    * Método para agregar una sucursal al archivo CSV.
    */
   private static void agregarSucursal(String rutaArchivoSucursales) {
-
-    System.out.println("Ingresa los siguientes datos para la sucursal:");
+    System.out.println("Ingresa los siguientes datos para añadir una nueva sucursal:");
 
     // Pedir los datos de la sucursal al usuario y los guardar en variables
     int idSucursal = (int) entrada("ID de la Sucursal (debe ser número): ");
@@ -146,7 +143,7 @@ public class Main {
   }
 
   private static void consultarSucursal(String rutaArchivoSucursales) {
-    int idSucursal = (int) entrada("Ingresa llave de Sucursal: ");
+    int idSucursal = (int) entrada("Ingresa la llave de la sucursal a consultar: ");
     System.out.println(
         "Mostrando datos de la sucursal con llave '" + idSucursal + "' en el archivo '" + rutaArchivoSucursales + "':");
 
@@ -168,11 +165,11 @@ public class Main {
     String datosSucursal = "";
 
     // Solicitamos la llave.
-    int idSucursal = (int) entrada("Ingresa la llave de Sucursal: ");
+    int idSucursal = (int) entrada("Ingresa la llave de sucursal a editar: ");
     scanner.nextLine();
 
     try {
-        datosSucursal = HandlerCSV.buscarPorId(rutaArchivoSucursales, idSucursal);
+      datosSucursal = HandlerCSV.buscarPorId(rutaArchivoSucursales, idSucursal);
     } catch (ArchivoCSVException e) {
       System.out.println("El id '" + idSucursal + "' no se encuentra en el archivo '" + rutaArchivoSucursales + "'.");
       return;
@@ -183,7 +180,8 @@ public class Main {
             + rutaArchivoSucursales
             + "':");
 
-    // Pedimos los nuevos datos de la sucursal al usuario y los guardamos en variables.
+    // Pedimos los nuevos datos de la sucursal al usuario y los guardamos en
+    // variables.
     String nombre = entradaTexto("Nombre de la Sucursal: ");
     String calle = entradaTexto("Calle: ");
     int numExt = (int) entrada("Número exterior: ");
@@ -215,6 +213,22 @@ public class Main {
 
     } catch (HorarioException | NumberFormatException e) {
       System.out.println("Datos en formato incorrecto: " + e.getMessage());
+    } catch (Exception e) {
+      System.out.println("Ocurrió algo realmente insperado: " + e.getMessage());
+    }
+  }
+
+  private static void eliminarSucursal(String rutaArchivoSucursales) {
+    int idSucursal = (int) entrada("Ingresa la llave de la sucursal a borrar: ");
+    System.out.println(
+        "Eliminando los datos de la sucursal con llave '" + idSucursal + "' en el archivo '" + rutaArchivoSucursales
+            + "':");
+
+    try {
+      HandlerCSV.removeRegistro(rutaArchivoSucursales, idSucursal);
+
+    } catch (ArchivoCSVException e) {
+      System.out.println("Id inválido: " + e.getMessage());
     } catch (Exception e) {
       System.out.println("Ocurrió algo realmente insperado: " + e.getMessage());
     }
