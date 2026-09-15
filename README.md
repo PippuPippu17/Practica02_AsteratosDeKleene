@@ -16,13 +16,15 @@ make compile
 make run
 ```
 
+Si se quiere correr el programa de nuevo, solo hay que usar el comando make run de nuevo.
+
 ### 3. Para generar la documentación usar el siguiente comando:
 
 ```bash
 make doc
 ```
 
-### Usar el siguiente comando entre ejecuciones del programa:
+### Usar el siguiente comando antes de make compile si se desea compilar de nuevo el programa 
 
 ```bash
 make clean
