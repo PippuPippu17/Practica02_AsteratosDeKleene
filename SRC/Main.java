@@ -238,7 +238,14 @@ public class Main {
    * Metodo para gestionar Premios.
    * Se puede agregar, consultar, editar y eliminar.
    */
-  private static void gestionarPremios() {
+  private static void gestionarPremios(String rutaArchivoPremios) {
+    try {
+      String encabezado = "idPremio,nombre,categoria,rangoEdad,puntosRequeridos,valorAproximado,idSucursal,stock";
+      HandlerCSV.inicializarArchivo(rutaArchivoPremios, encabezado);
+    } catch (ArchivoCSVException e) {
+      System.out.println(e.getMessage());
+    }
+
     boolean volvermenup = false;
 
     while (!volvermenup) {
@@ -252,24 +259,20 @@ public class Main {
 
         long opcionInt = entrada("Selecciona una operación: ");
         int opcion = (int) opcionInt;
+        System.out.println();
+
         switch (opcion) {
           case 1:
-            agregarPremio();
+            agregarPremio(rutaArchivoPremios);
             break;
           case 2:
-            long id = entrada("Ingresa llave de Premio: ");
-            System.out.println("\nConsultando Premio con llave: " + id);
-            // Método para buscar en el CSV
+            consultarPremio(rutaArchivoPremios);
             break;
           case 3:
-            long idEdit = entrada("Ingresa la llave de Premio: ");
-            System.out.println("\nEditando Premio con llave: " + idEdit);
-            // Método para editar en el CSV
+            editarPremio(rutaArchivoPremios);
             break;
           case 4:
-            long idElim = entrada("Ingresa la llave de Premio a eliminar: ");
-            System.out.println("\nEliminando Premio con llave: " + idElim);
-            // Método para eliminar en el CSV
+            eliminarPremio(rutaArchivoPremios);
             break;
           case 5:
             // fuga
@@ -285,36 +288,129 @@ public class Main {
     }
   }
 
-  /**
-   * Método para agregar premios
-   */
-  public static void agregarPremio() {
+  private static void agregarPremio(String rutaArchivoPremios) {
+    System.out.println("Ingresa los siguientes datos para añadir un nuevo premio:");
+
+    // Pedir los datos de el premio al usuario y los guardamos en variables
+    int idPremio = (int) entrada("ID del premio (debe ser número): ");
+    scanner.nextLine();
+    String nombre = entradaTexto("Nombre del premio: ");
+    String categoria = entradaTexto("Categoría ('Infantil', 'Juvenil' o 'Adulto'): ");
+    String rangoEdad = entradaTexto("Rango de Edad ('Bajo', 'Medio' o 'Grande'): ");
+    int puntosRequeridos = (int) entrada("Puntos requeridos: ");
+    scanner.nextLine();
+
+    System.out.print("Valor aproximado: ");
+    double valorAproximado = scanner.nextDouble();
+    scanner.nextLine();
+
+    int idSucursal= (int) entrada("ID de la sucursal en la que el premio está disponible (debe ser número): ");
+    scanner.nextLine();
+    int stock = (int) entrada("Número de premios que hay en existencia: ");
+    scanner.nextLine();
+
+    // Escribir los datos en el archivo CSV
     try {
-      System.out.println("Ingresa los siguientes datos para el premio:");
+      Premio premio = new Premio(idPremio, nombre, categoria, rangoEdad, puntosRequeridos, valorAproximado, idSucursal, stock);
+      HandlerCSV.addRegistro(rutaArchivoPremios, idPremio, premio.toCSV());
 
-      // Pedir los datos del premio al usuario y los guardar en variables
-      long idPremio = entrada("ID del Premio (debe ser un número): ");
-      scanner.nextLine();
-      String nombreP = entradaTexto("Nombre del Premio: ");
-      String categoria = entradaTexto("Categoría del Premio: (Bajo, Medio o Alto): ");
-      String rangoEdad = entradaTexto("Rango de Edad (infantil 3-12, juvenil 13-17, adulto 18+): ");
-      long puntos = entrada("Puntos necesarios para canjear el premio: ");
-      scanner.nextLine();
-      long cantidadS = entrada("Cantidad de premios en sucursal: ");
-      scanner.nextLine();
-      long idSucursal = entrada("ID de la Sucursal donde se encuentra el premio: ");
+      System.out.println(
+          "Se agregó con éxito el premio a el archivo '" + rutaArchivoPremios + "' con los siguientes datos:");
+      System.out.println(premio);
 
-      // Escribir los datos en el archivo CSV
-      try (FileWriter writer = new FileWriter("premios.csv", true)) {
-        writer.append(idPremio + "," + nombreP + "," + categoria + "," + rangoEdad + "," + puntos + "," + cantidadS
-            + "," + idSucursal + "\n");
-        System.out.println("Premio agregado exitosamente.");
-      } catch (IOException e) {
-        System.out.println("Error al escribir en el archivo CSV: " + e.getMessage());
-      }
-      // Manejo de excepciones
     } catch (Exception e) {
-      System.out.println("Error al agregar el premio: " + e.getMessage());
+      System.out.println("Ocurrió algo realmente insperado: " + e.getMessage());
+    }
+  }
+
+  private static void consultarPremio(String rutaArchivoPremios) {
+    int idPremio = (int) entrada("Ingresa la llave del premio a consultar: ");
+    System.out.println(
+        "Mostrando datos del premio con llave '" + idPremio + "' en el archivo '" + rutaArchivoPremios + "':");
+
+    try {
+      String datosPremio = HandlerCSV.buscarPorId(rutaArchivoPremios, idPremio);
+      Premio premioConsultado = Premio.fromCSV(datosPremio);
+      System.out.println(premioConsultado);
+
+    } catch (ArchivoCSVException e) {
+      System.out.println("Id inválido: " + e.getMessage());
+    } catch (Exception e) {
+      System.out.println("Ocurrió algo realmente insperado: " + e.getMessage());
+    }
+  }
+
+  private static void editarPremio(String rutaArchivoPremios) {
+    String datosPremio = "";
+
+    // Solicitamos la llave.
+    int idPremio = (int) entrada("Ingresa la llave del premio a editar: ");
+    scanner.nextLine();
+
+    try {
+      datosPremio = HandlerCSV.buscarPorId(rutaArchivoPremios, idPremio);
+    } catch (ArchivoCSVException e) {
+      System.out.println("El id '" + idPremio + "' no se encuentra en el archivo '" + rutaArchivoPremios + "'.");
+      return;
+    }
+
+    System.out.println(
+        "Ingresa los nuevos datos para el premio con llave '" + idPremio + "' en el archivo '"
+            + rutaArchivoPremios
+            + "':");
+
+    // Pedimos los nuevos datos de el premio al usuario y los guardamos en
+    // variables.
+    String nombre = entradaTexto("Nombre del premio: ");
+    String categoria = entradaTexto("Categoría ('Infantil', 'Juvenil' o 'Adulto'): ");
+    String rangoEdad = entradaTexto("Rango de Edad ('Bajo', 'Medio' o 'Grande'): ");
+    int puntosRequeridos = (int) entrada("Puntos requeridos: ");
+    scanner.nextLine();
+
+    System.out.print("Valor aproximado: ");
+    double valorAproximado = scanner.nextDouble();
+    scanner.nextLine();
+    
+    int idSucursal= (int) entrada("ID de la sucursal en la que el premio está disponible (debe ser número): ");
+    scanner.nextLine();
+    int stock = (int) entrada("Número de premios que hay en existencia: ");
+    scanner.nextLine();
+
+    try {
+      Premio PremioAEditar = Premio.fromCSV(datosPremio);
+
+      // Pedir los datos de la sucursal al usuario y los guardamos en variables
+      PremioAEditar.setNombre(nombre);
+      PremioAEditar.setCategoria(categoria);
+      PremioAEditar.setRangoEdad(rangoEdad);
+      PremioAEditar.setPuntosRequeridos(puntosRequeridos);
+      PremioAEditar.setValorAproximado(valorAproximado);
+      PremioAEditar.setIdSucursal(idSucursal);
+      PremioAEditar.setStock(stock);
+
+      System.out.println("Los nuevos datos del premio con id '" + idPremio + "' en el archivo '"
+          + rutaArchivoPremios + "' son:");
+      HandlerCSV.setRegistro(rutaArchivoPremios, idPremio, PremioAEditar.toCSV());
+      System.out.println(PremioAEditar);
+
+    } catch (Exception e) {
+      System.out.println("Ocurrió algo realmente insperado: " + e.getMessage());
+    }
+  }
+
+  private static void eliminarPremio(String rutaArchivoPremios) {
+    int idPremio = (int) entrada("Ingresa la llave de la sucursal a borrar: ");
+    System.out.println(
+        "Eliminando los datos del premio con llave '" + idPremio + "' en el archivo '" + rutaArchivoPremios
+            + "':");
+
+    try {
+      HandlerCSV.removeRegistro(rutaArchivoPremios, idPremio);
+
+    } catch (ArchivoCSVException e) {
+      System.out.println("Id inválido: " + e.getMessage());
+    } catch (Exception e) {
+      System.out.println("Ocurrió algo realmente insperado: " + e.getMessage());
     }
   }
 
@@ -429,7 +525,7 @@ public class Main {
             gestionarSucursales(rutaArchivoSucursales);
             break;
           case 2:
-            gestionarPremios();
+            gestionarPremios(rutaArchivoPremios);
             break;
           case 3:
             gestionarClientes();

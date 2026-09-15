@@ -116,7 +116,7 @@ public class HandlerCSV {
     public static void removeRegistro(String rutaArchivo, int id) throws ArchivoCSVException {
         if (buscarPorId(rutaArchivo, id) == null) {
             throw new ArchivoCSVException(
-                    "No hay ningun registro con el '" + id + "' en el archivo: '" + rutaArchivo + "'.");
+                    "No hay ningun registro con el id '" + id + "' en el archivo: '" + rutaArchivo + "'.");
         }
 
         List<String> registros = getAll(rutaArchivo);
