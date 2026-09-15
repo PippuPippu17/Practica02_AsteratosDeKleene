@@ -1,44 +1,35 @@
 import exceptions.ArchivoCSVException;
 import exceptions.HorarioException;
 import exceptions.RegistroNoEncontradoException;
-import java.util.InputMismatchException;
-import java.util.Scanner;
+import exceptions.ValidacionException;
 
 /**
  * Clase que gestiona el menú de la aplicacion
  * "PuellaGame".
  **/
 public class Main {
-  // Declaramos el scanner para la entrada del usuario.
-  private static final Scanner scanner = new Scanner(System.in);
+  // Toda la lectura del teclado se delega a EntradaConsola, que valida el tipo
+  // de cada dato y vuelve a preguntar cuando la captura es incorrecta.
 
   /**
-   * Método auxiliar para leer una entrada de texto.
-   * 
-   * @param mensaje Mensaje para el usuario.
-   * @return Entrada de texto válida.
+   * Lee los puntos que pide un premio y no los acepta hasta que correspondan a
+   * su categoría.
+   *
+   * La regla proviene del caso de uso: los premios bajos van de 20 a 1,000
+   * puntos, los medios de 1,001 a 3,999 y los grandes de 4,000 en adelante.
+   *
+   * @param categoria Categoría del premio, ya validada contra su catálogo.
+   * @return Los puntos capturados.
    */
-  private static String entradaTexto(String mensaje) {
-    System.out.print(mensaje);
-    return scanner.nextLine();
-  }
-
-  /**
-   * Método auxiliar que verifica que la entrada del usuario sea un número válido.
-   * 
-   * @param mensaje Mensaje de advertencia.
-   * @return Entero valido.
-   */
-  private static long entrada(String mensaje) {
+  private static int leerPuntosDePremio(String categoria) {
     while (true) {
+      int puntos = EntradaConsola.leerEntero("Puntos requeridos: ");
+
       try {
-        System.out.print(mensaje);
-        return scanner.nextLong();
-      } catch (InputMismatchException e) {
-        // Descartamos el token inválido junto con el resto de la línea.
-        // Si aquí se volviera a llamar a nextLong() la excepción se repetiría.
-        scanner.nextLine();
-        System.out.println("Ingresa un número válido.");
+        return Validador.validarPuntosSegunCategoria(categoria, puntos);
+
+      } catch (ValidacionException e) {
+        System.out.println(e.getMessage());
       }
     }
   }
@@ -69,8 +60,7 @@ public class Main {
         System.out.println("4. Eliminar Sucursal");
         System.out.println("5. Volver al menú principal");
 
-        long opcionInt = entrada("Selecciona una operación: ");
-        int opcion = (int) opcionInt;
+        int opcion = EntradaConsola.leerOpcion("Selecciona una operación: ", 1, 5);
         System.out.println();
 
         switch (opcion) {
@@ -89,12 +79,9 @@ public class Main {
           case 5:
             volvermenup = true;
             break;
-          default:
-            System.out.println("\nOpción inválida. Elige un número entre 1 y 5.");
         }
       } catch (Exception e) {
-        System.out.println("\nIngresa una entrada válida: " + e.getMessage());
-        scanner.nextLine();
+        System.out.println("\nOcurrió un error inesperado: " + e.getMessage());
       }
     }
   }
@@ -106,18 +93,15 @@ public class Main {
     System.out.println("Ingresa los siguientes datos para añadir una nueva sucursal:");
 
     // Pedir los datos de la sucursal al usuario y los guardar en variables
-    int idSucursal = (int) entrada("ID de la Sucursal (debe ser número): ");
-    scanner.nextLine();
-    String nombre = entradaTexto("Nombre de la Sucursal: ");
-    String calle = entradaTexto("Calle: ");
-    int numExt = (int) entrada("Número exterior: ");
-    scanner.nextLine();
-    String numInter = entradaTexto("Número interior: ");
-    String colonia = entradaTexto("Colonia: ");
-    String estado = entradaTexto("Estado: ");
-    long telefono = entrada("Teléfono: ");
-    scanner.nextLine();
-    String horario = entradaTexto("Horario: ");
+    int idSucursal = EntradaConsola.leerEntero("ID de la Sucursal (debe ser número): ");
+    String nombre = EntradaConsola.leerTexto("Nombre de la Sucursal: ");
+    String calle = EntradaConsola.leerTexto("Calle: ");
+    int numExt = EntradaConsola.leerEntero("Número exterior: ", 1, 99999);
+    String numInter = EntradaConsola.leerTextoOpcional("Número interior (deja vacío si no aplica): ", "S/N");
+    String colonia = EntradaConsola.leerTexto("Colonia: ");
+    String estado = EntradaConsola.leerTexto("Estado: ");
+    long telefono = EntradaConsola.leerTelefono("Teléfono (10 dígitos): ");
+    String horario = EntradaConsola.leerTexto("Horario (ejemplo: Lun-Vie 11:00-21:00|Sab-Dom 10:00-22:00): ");
 
     // Escribir los datos en el archivo CSV
     try {
@@ -125,13 +109,13 @@ public class Main {
       HandlerCSV.addRegistro(rutaArchivoSucursales, idSucursal, sucursal.toCSV());
 
       System.out.println(
-          "Se agregó con éxito la sucursal a el archivo '" + rutaArchivoSucursales + "' con los siguientes datos:");
+          "Se agregó con éxito la sucursal al archivo '" + rutaArchivoSucursales + "' con los siguientes datos:");
       System.out.println(sucursal);
 
     } catch (HorarioException | ArchivoCSVException e) {
       System.out.println(e.getMessage());
     } catch (Exception e) {
-      System.out.println("Ocurrió algo realmente insperado: " + e.getMessage());
+      System.out.println("Ocurrió un error inesperado: " + e.getMessage());
     }
   }
 
@@ -142,7 +126,7 @@ public class Main {
    * @param rutaArchivoSucursales Ruta del archivo CSV de sucursales.
    */
   private static void consultarSucursal(String rutaArchivoSucursales) {
-    int idSucursal = (int) entrada("Ingresa la llave de la sucursal a consultar: ");
+    int idSucursal = EntradaConsola.leerEntero("Ingresa la llave de la sucursal a consultar: ");
 
     try {
       String datosSucursal = HandlerCSV.buscarPorId(rutaArchivoSucursales, idSucursal);
@@ -172,8 +156,7 @@ public class Main {
     String datosSucursal = "";
 
     // Solicitamos la llave.
-    int idSucursal = (int) entrada("Ingresa la llave de sucursal a editar: ");
-    scanner.nextLine();
+    int idSucursal = EntradaConsola.leerEntero("Ingresa la llave de la sucursal a editar: ");
 
     // Si la llave no existe salimos de inmediato, antes de pedirle al usuario
     // datos que no se van a poder guardar.
@@ -194,16 +177,14 @@ public class Main {
 
     // Pedimos los nuevos datos de la sucursal al usuario y los guardamos en
     // variables.
-    String nombre = entradaTexto("Nombre de la Sucursal: ");
-    String calle = entradaTexto("Calle: ");
-    int numExt = (int) entrada("Número exterior: ");
-    scanner.nextLine();
-    String numInter = entradaTexto("Número interior: ");
-    String colonia = entradaTexto("Colonia: ");
-    String estado = entradaTexto("Estado: ");
-    long telefono = entrada("Teléfono: ");
-    scanner.nextLine();
-    String horario = entradaTexto("Horario: ");
+    String nombre = EntradaConsola.leerTexto("Nombre de la Sucursal: ");
+    String calle = EntradaConsola.leerTexto("Calle: ");
+    int numExt = EntradaConsola.leerEntero("Número exterior: ", 1, 99999);
+    String numInter = EntradaConsola.leerTextoOpcional("Número interior (deja vacío si no aplica): ", "S/N");
+    String colonia = EntradaConsola.leerTexto("Colonia: ");
+    String estado = EntradaConsola.leerTexto("Estado: ");
+    long telefono = EntradaConsola.leerTelefono("Teléfono (10 dígitos): ");
+    String horario = EntradaConsola.leerTexto("Horario (ejemplo: Lun-Vie 11:00-21:00|Sab-Dom 10:00-22:00): ");
 
     try {
       Sucursal sucursalAEditar = Sucursal.fromCSV(datosSucursal);
@@ -240,7 +221,7 @@ public class Main {
    * @param rutaArchivoSucursales Ruta del archivo CSV de sucursales.
    */
   private static void eliminarSucursal(String rutaArchivoSucursales) {
-    int idSucursal = (int) entrada("Ingresa la llave de la sucursal a borrar: ");
+    int idSucursal = EntradaConsola.leerEntero("Ingresa la llave de la sucursal a borrar: ");
 
     try {
       HandlerCSV.removeRegistro(rutaArchivoSucursales, idSucursal);
@@ -271,8 +252,7 @@ public class Main {
         System.out.println("4. Eliminar Premio");
         System.out.println("5. Volver al menú principal");
 
-        long opcionInt = entrada("Selecciona una operación: ");
-        int opcion = (int) opcionInt;
+        int opcion = EntradaConsola.leerOpcion("Selecciona una operación: ", 1, 5);
         System.out.println();
 
         switch (opcion) {
@@ -292,12 +272,9 @@ public class Main {
             // fuga
             volvermenup = true;
             break;
-          default:
-            System.out.println("\nOpción inválida. Elige un número entre 1 y 5.");
         }
       } catch (Exception e) {
-        System.out.println("\nIngresa una entrada válida: " + e.getMessage());
-        scanner.nextLine();
+        System.out.println("\nOcurrió un error inesperado: " + e.getMessage());
       }
     }
   }
@@ -306,22 +283,16 @@ public class Main {
     System.out.println("Ingresa los siguientes datos para añadir un nuevo premio:");
 
     // Pedir los datos de el premio al usuario y los guardamos en variables
-    int idPremio = (int) entrada("ID del premio (debe ser número): ");
-    scanner.nextLine();
-    String nombre = entradaTexto("Nombre del premio: ");
-    String categoria = entradaTexto("Categoría ('Bajo', 'Medio' o 'Grande'): ");
-    String rangoEdad = entradaTexto("Rango de Edad ('Infantil', 'Juvenil' o 'Adulto'): ");
-    int puntosRequeridos = (int) entrada("Puntos requeridos: ");
-    scanner.nextLine();
+    int idPremio = EntradaConsola.leerEntero("ID del premio (debe ser número): ");
+    String nombre = EntradaConsola.leerTexto("Nombre del premio: ");
+    String categoria = EntradaConsola.leerDeCatalogo("Categoría", Validador.CATEGORIAS_PREMIO);
+    String rangoEdad = EntradaConsola.leerDeCatalogo("Rango de edad", Validador.RANGOS_EDAD);
+    int puntosRequeridos = leerPuntosDePremio(categoria);
 
-    System.out.print("Valor aproximado: ");
-    double valorAproximado = scanner.nextDouble();
-    scanner.nextLine();
+    double valorAproximado = EntradaConsola.leerMontoPositivo("Valor aproximado en MXN: ", "valor aproximado");
 
-    int idSucursal = (int) entrada("ID de la sucursal en la que el premio está disponible (debe ser número): ");
-    scanner.nextLine();
-    int stock = (int) entrada("Número de premios que hay en existencia: ");
-    scanner.nextLine();
+    int idSucursal = EntradaConsola.leerEntero("ID de la sucursal donde está disponible: ");
+    int stock = EntradaConsola.leerEntero("Cantidad disponible en existencia: ", 0, 99999);
 
     // Escribir los datos en el archivo CSV
     try {
@@ -330,11 +301,15 @@ public class Main {
       HandlerCSV.addRegistro(rutaArchivoPremios, idPremio, premio.toCSV());
 
       System.out.println(
-          "Se agregó con éxito el premio a el archivo '" + rutaArchivoPremios + "' con los siguientes datos:");
+          "Se agregó con éxito el premio al archivo '" + rutaArchivoPremios + "' con los siguientes datos:");
       System.out.println(premio);
 
+    } catch (ArchivoCSVException e) {
+      System.out.println(e.getMessage());
+    } catch (IllegalArgumentException e) {
+      System.out.println("Datos en formato incorrecto: " + e.getMessage());
     } catch (Exception e) {
-      System.out.println("Ocurrió algo realmente insperado: " + e.getMessage());
+      System.out.println("Ocurrió un error inesperado: " + e.getMessage());
     }
   }
 
@@ -345,7 +320,7 @@ public class Main {
    * @param rutaArchivoPremios Ruta del archivo CSV de premios.
    */
   private static void consultarPremio(String rutaArchivoPremios) {
-    int idPremio = (int) entrada("Ingresa la llave del premio a consultar: ");
+    int idPremio = EntradaConsola.leerEntero("Ingresa la llave del premio a consultar: ");
 
     try {
       String datosPremio = HandlerCSV.buscarPorId(rutaArchivoPremios, idPremio);
@@ -375,8 +350,7 @@ public class Main {
     String datosPremio = "";
 
     // Solicitamos la llave.
-    int idPremio = (int) entrada("Ingresa la llave del premio a editar: ");
-    scanner.nextLine();
+    int idPremio = EntradaConsola.leerEntero("Ingresa la llave del premio a editar: ");
 
     // Si la llave no existe salimos de inmediato, antes de pedirle al usuario
     // datos que no se van a poder guardar.
@@ -397,20 +371,15 @@ public class Main {
 
     // Pedimos los nuevos datos de el premio al usuario y los guardamos en
     // variables.
-    String nombre = entradaTexto("Nombre del premio: ");
-    String categoria = entradaTexto("Categoría ('Bajo', 'Medio' o 'Grande'): ");
-    String rangoEdad = entradaTexto("Rango de Edad ('Infantil', 'Juvenil' o 'Adulto'): ");
-    int puntosRequeridos = (int) entrada("Puntos requeridos: ");
-    scanner.nextLine();
+    String nombre = EntradaConsola.leerTexto("Nombre del premio: ");
+    String categoria = EntradaConsola.leerDeCatalogo("Categoría", Validador.CATEGORIAS_PREMIO);
+    String rangoEdad = EntradaConsola.leerDeCatalogo("Rango de edad", Validador.RANGOS_EDAD);
+    int puntosRequeridos = leerPuntosDePremio(categoria);
 
-    System.out.print("Valor aproximado: ");
-    double valorAproximado = scanner.nextDouble();
-    scanner.nextLine();
+    double valorAproximado = EntradaConsola.leerMontoPositivo("Valor aproximado en MXN: ", "valor aproximado");
 
-    int idSucursal = (int) entrada("ID de la sucursal en la que el premio está disponible (debe ser número): ");
-    scanner.nextLine();
-    int stock = (int) entrada("Número de premios que hay en existencia: ");
-    scanner.nextLine();
+    int idSucursal = EntradaConsola.leerEntero("ID de la sucursal donde está disponible: ");
+    int stock = EntradaConsola.leerEntero("Cantidad disponible en existencia: ", 0, 99999);
 
     try {
       Premio PremioAEditar = Premio.fromCSV(datosPremio);
@@ -446,7 +415,7 @@ public class Main {
    * @param rutaArchivoPremios Ruta del archivo CSV de premios.
    */
   private static void eliminarPremio(String rutaArchivoPremios) {
-    int idPremio = (int) entrada("Ingresa la llave del premio a borrar: ");
+    int idPremio = EntradaConsola.leerEntero("Ingresa la llave del premio a borrar: ");
 
     try {
       HandlerCSV.removeRegistro(rutaArchivoPremios, idPremio);
@@ -483,8 +452,7 @@ public class Main {
         System.out.println("4. Eliminar Cliente");
         System.out.println("5. Volver al menú principal");
 
-        long opcionLong = entrada("Selecciona una operación: ");
-        int opcion = (int) opcionLong;
+        int opcion = EntradaConsola.leerOpcion("Selecciona una operación: ", 1, 5);
 
         switch (opcion) {
           case 1:
@@ -503,13 +471,10 @@ public class Main {
             // Fuga
             volvermenup = true;
             break;
-          default:
-            System.out.println("\nOpción inválida. Elige un número entre 1 y 5.");
         }
         // Manejo de excepciones
       } catch (Exception e) {
-        System.out.println("\nIngresa una entrada válida: " + e.getMessage());
-        scanner.nextLine();
+        System.out.println("\nOcurrió un error inesperado: " + e.getMessage());
       }
     }
   }
@@ -528,18 +493,15 @@ public class Main {
     System.out.println("Ingresa los datos para el cliente:");
 
     // Pedir los datos del cliente al usuario y los guardar en variables
-    int idCliente = (int) entrada("ID del cliente (debe ser un número): ");
-    scanner.nextLine();
-    String nombreCliente = entradaTexto("Nombre del cliente: ");
-    String apellidoP = entradaTexto("Apellido paterno: ");
-    String apellidoM = entradaTexto("Apellido materno: ");
-    int fechaNac = (int) entrada("Fecha de nacimiento (DDMMYYYY): ");
-    scanner.nextLine();
-    int edad = (int) entrada("Edad: ");
-    scanner.nextLine();
-    String sexo = entradaTexto("Sexo ('Masculino', 'Femenino' o 'No binario'): ");
-    String correoE = entradaTexto("Correo electrónico: ");
-    long telefonoC = entrada("Teléfono: ");
+    int idCliente = EntradaConsola.leerEntero("ID del cliente (debe ser un número): ");
+    String nombreCliente = EntradaConsola.leerTexto("Nombre del cliente: ");
+    String apellidoP = EntradaConsola.leerTexto("Apellido paterno: ");
+    String apellidoM = EntradaConsola.leerTexto("Apellido materno: ");
+    int fechaNac = EntradaConsola.leerFecha("Fecha de nacimiento (DDMMAAAA): ");
+    int edad = EntradaConsola.leerEntero("Edad: ", Validador.EDAD_MINIMA, Validador.EDAD_MAXIMA);
+    String sexo = EntradaConsola.leerDeCatalogo("Sexo", Validador.SEXOS);
+    String correoE = EntradaConsola.leerCorreo("Correo electrónico: ");
+    long telefonoC = EntradaConsola.leerTelefono("Teléfono (10 dígitos): ");
 
     // Escribir los datos en el archivo CSV
     try {
@@ -547,14 +509,14 @@ public class Main {
           telefonoC);
       HandlerCSV.addRegistro(rutaArchivoClientes, idCliente, cliente.toCSV());
 
-      System.out.println(
-          "Se agregó el ciente con éxito a el archivo '" + rutaArchivoClientes + "' con los siguientes datos:");
+      System.out
+          .println("Se agregó con éxito el cliente al archivo '" + rutaArchivoClientes + "' con los siguientes datos:");
       System.out.println(cliente);
 
     } catch (ArchivoCSVException e) {
       System.out.println(e.getMessage());
     } catch (Exception e) {
-      System.out.println("Ocurrió algo realmente insperado: " + e.getMessage());
+      System.out.println("Ocurrió un error inesperado: " + e.getMessage());
     }
   }
 
@@ -567,7 +529,7 @@ public class Main {
    *                            búsqueda del cliente.
    */
   private static void consultarCliente(String rutaArchivoClientes) {
-    int idCliente = (int) entrada("Ingresa llave del Cliente: ");
+    int idCliente = EntradaConsola.leerEntero("Ingresa la llave del cliente a consultar: ");
 
     try {
       String datosCliente = HandlerCSV.buscarPorId(rutaArchivoClientes, idCliente);
@@ -600,8 +562,7 @@ public class Main {
     String datosCliente = "";
 
     // Solicitamos la llave
-    int idCliente = (int) entrada("Ingresa la llave del cliente a editar: ");
-    scanner.nextLine();
+    int idCliente = EntradaConsola.leerEntero("Ingresa la llave del cliente a editar: ");
 
     // Si la llave no existe salimos de inmediato, antes de pedirle al usuario
     // datos que no se van a poder guardar.
@@ -621,17 +582,14 @@ public class Main {
             + "':");
 
     // Pedimos los nuevos datos del cliente al usuario y los guardamos en variables.
-    String nombreCliente = entradaTexto("Nombre del cliente: ");
-    String apellidoP = entradaTexto("Apellido Paterno: ");
-    String apellidoM = entradaTexto("Apellido Materno: ");
-    int fechaNac = (int) entrada("Fecha de Nacimiento (DDMMYYYY): ");
-    scanner.nextLine();
-    int edad = (int) entrada("Edad: ");
-    scanner.nextLine();
-    String sexo = entradaTexto("Sexo ('Masculino', 'Femenino' o 'No binario'): ");
-    String correoE = entradaTexto("Correo Electrónico: ");
-    long telefonoC = entrada("Teléfono: ");
-    scanner.nextLine();
+    String nombreCliente = EntradaConsola.leerTexto("Nombre del cliente: ");
+    String apellidoP = EntradaConsola.leerTexto("Apellido paterno: ");
+    String apellidoM = EntradaConsola.leerTexto("Apellido materno: ");
+    int fechaNac = EntradaConsola.leerFecha("Fecha de nacimiento (DDMMAAAA): ");
+    int edad = EntradaConsola.leerEntero("Edad: ", Validador.EDAD_MINIMA, Validador.EDAD_MAXIMA);
+    String sexo = EntradaConsola.leerDeCatalogo("Sexo", Validador.SEXOS);
+    String correoE = EntradaConsola.leerCorreo("Correo electrónico: ");
+    long telefonoC = EntradaConsola.leerTelefono("Teléfono (10 dígitos): ");
 
     try {
       Cliente clienteAEditar = Cliente.fromCSV(datosCliente);
@@ -670,7 +628,7 @@ public class Main {
    *                            registro del cliente.
    */
   private static void eliminarCliente(String rutaArchivoClientes) {
-    int idCliente = (int) entrada("Ingresa la llave del cliente a borrar: ");
+    int idCliente = EntradaConsola.leerEntero("Ingresa la llave del cliente a borrar: ");
 
     try {
       HandlerCSV.removeRegistro(rutaArchivoClientes, idCliente);
@@ -740,14 +698,13 @@ public class Main {
     }
 
     boolean salir = false;
-    // Bucle hasta que el usuario decida cerrar la app
+
+    // Bucle hasta que el usuario decida cerrar la aplicación.
     while (!salir) {
-      // Manejo de excepciones para entradas invalidas
       try {
         mostrarMenuP();
-        long opcionLong = entrada("Selecciona una opción: ");
-        int opcion = (int) opcionLong;
-        // Casos que puede eligir el usuario
+        int opcion = EntradaConsola.leerOpcion("Selecciona una opción: ", 1, 4);
+
         switch (opcion) {
           case 1:
             gestionarSucursales(rutaArchivoSucursales);
@@ -759,20 +716,18 @@ public class Main {
             gestionarClientes(rutaArchivoClientes);
             break;
           case 4:
-            // Cierra la app, que triste, el usuario ya no la va a usar chale ni modo
-            System.out.println("\nSaliendo de la app ):");
+            System.out.println("\nGracias por usar PuellaGame. Hasta pronto.");
             salir = true;
             break;
-          // Cualquier entrada invalida arroja una advertencia
-          default:
-            System.out.println("\nIngresa un número valido (entre 1 y 4.");
         }
-        // Atrapa la excepcion con InputMismatchException para entradas invalidas
-      } catch (InputMismatchException e) {
-        System.out.println("\nIngresa una entrada valida" + e.getMessage());
-        // Limpia el scanner para ingresar una nueva entrada
-        scanner.nextLine();
+
+        // Última red de seguridad: si algo se escapa de los menús, la aplicación
+        // lo reporta y sigue funcionando en lugar de terminar.
+      } catch (Exception e) {
+        System.out.println("\nOcurrió un error inesperado: " + e.getMessage());
       }
     }
+
+    EntradaConsola.cerrar();
   }
 }

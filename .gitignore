@@ -1,0 +1,17 @@
+# Archivos compilados. Se generan con 'make compile' y solo se incluyen
+# al armar el zip de entrega, no se versionan.
+*.class
+SRC/.build
+
+# Documentación generada con 'make doc'.
+SRC/Doc/
+
+# Entregable empaquetado.
+Practica02_*.zip
+
+# Basura del sistema operativo y de los editores.
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/

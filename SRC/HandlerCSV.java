@@ -159,8 +159,7 @@ public class HandlerCSV {
           continue;
         }
 
-        String[] columnas = lineaLeida.split(",");
-        idActual = Integer.parseInt(columnas[0].trim());
+        idActual = CSVUtil.obtenerLlave(lineaLeida);
 
         if (idActual == id) {
           return lineaLeida;
@@ -196,7 +195,7 @@ public class HandlerCSV {
     // Bucle que para hasta que se haya eliminado el registro con la llave deseada.
     for (int i = 0; i < registros.size(); i++) {
       registroActual = registros.get(i);
-      idActual = Integer.parseInt(registroActual.trim().split(",")[0]);
+      idActual = CSVUtil.obtenerLlave(registroActual);
 
       if (idActual == id) {
         registros.remove(i);
@@ -236,7 +235,7 @@ public class HandlerCSV {
 
     // Sustituimos la línea correspondiente conservando su posición original.
     for (int i = 0; i < registros.size(); i++) {
-      idActual = Integer.parseInt(registros.get(i).trim().split(",")[0]);
+      idActual = CSVUtil.obtenerLlave(registros.get(i));
 
       if (idActual == id) {
         registros.set(i, lineaCSV);
