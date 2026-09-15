@@ -21,13 +21,15 @@ public class HandlerCSV {
   /**
    * Crea el archivo CSV con el encabezado indicado en caso de que aún no exista.
    *
-   * El método es idempotente: si el archivo ya existe no hace nada y no lanza
-   * ninguna excepción, de modo que puede invocarse con seguridad cada vez que
-   * arranca la aplicación.
+   * El método es idempotente: si el archivo ya existe con contenido no hace nada
+   * y no lanza ninguna excepción, de modo que puede invocarse con seguridad cada
+   * vez que arranca la aplicación. Un archivo que existe pero está vacío se
+   * considera incompleto y se le escribe el encabezado.
    *
    * @param rutaArchivo Ruta donde se creará el archivo.
    * @param encabezado  Primera línea con las columnas del CSV.
-   * @return true si el archivo se creó en esta llamada, false si ya existía.
+   * @return true si el archivo se creó o se le escribió el encabezado en esta
+   *         llamada, false si ya estaba listo.
    * @throws ArchivoCSVException Si el encabezado es inválido o si ocurre un fallo
    *                             al escribir.
    */
@@ -38,8 +40,10 @@ public class HandlerCSV {
 
     File archivo = new File(rutaArchivo);
 
-    // Si ya existe no se toca, para no perder los registros que tenga dentro.
-    if (archivo.exists()) {
+    // Si ya existe y tiene contenido no se toca, para no perder los registros que
+    // tenga dentro. Un archivo vacío sí se repara: sin encabezado, el primer
+    // registro que se agregara ocuparía su lugar y se perdería al leer.
+    if (archivo.exists() && archivo.length() > 0) {
       return false;
     }
 

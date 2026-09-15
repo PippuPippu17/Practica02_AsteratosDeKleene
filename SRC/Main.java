@@ -101,7 +101,7 @@ public class Main {
     String colonia = EntradaConsola.leerTexto("Colonia: ");
     String estado = EntradaConsola.leerTexto("Estado: ");
     long telefono = EntradaConsola.leerTelefono("Teléfono (10 dígitos): ");
-    String horario = EntradaConsola.leerTexto("Horario (ejemplo: Lun-Vie 11:00-21:00|Sab-Dom 10:00-22:00): ");
+    String horario = EntradaConsola.leerHorario("Horario (ejemplo: Lun-Vie 11:00-21:00|Sab-Dom 10:00-22:00): ");
 
     // Escribir los datos en el archivo CSV
     try {
@@ -184,7 +184,7 @@ public class Main {
     String colonia = EntradaConsola.leerTexto("Colonia: ");
     String estado = EntradaConsola.leerTexto("Estado: ");
     long telefono = EntradaConsola.leerTelefono("Teléfono (10 dígitos): ");
-    String horario = EntradaConsola.leerTexto("Horario (ejemplo: Lun-Vie 11:00-21:00|Sab-Dom 10:00-22:00): ");
+    String horario = EntradaConsola.leerHorario("Horario (ejemplo: Lun-Vie 11:00-21:00|Sab-Dom 10:00-22:00): ");
 
     try {
       Sucursal sucursalAEditar = Sucursal.fromCSV(datosSucursal);

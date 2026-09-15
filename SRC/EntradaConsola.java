@@ -1,3 +1,4 @@
+import exceptions.HorarioException;
 import exceptions.ValidacionException;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -273,6 +274,33 @@ public class EntradaConsola {
         return Validador.validarFecha(fecha);
 
       } catch (ValidacionException e) {
+        System.out.println(e.getMessage());
+      }
+    }
+  }
+
+  /**
+   * Lee el horario de una sucursal y no lo acepta hasta que cumpla con el
+   * formato esperado.
+   *
+   * Sin este método el horario sería el único campo que se valida hasta el
+   * momento de construir la sucursal, de modo que un error de captura obligaría
+   * al usuario a volver a escribir todos los datos anteriores.
+   *
+   * @param mensaje Texto que se muestra antes de leer.
+   * @return El horario capturado, ya validado.
+   */
+  public static String leerHorario(String mensaje) {
+    while (true) {
+      String entrada = leerTexto(mensaje);
+
+      try {
+        // Se construye un Horario solo para aprovechar sus validaciones. Si el
+        // texto es correcto se regresa tal cual lo escribió el usuario.
+        new Horario(entrada);
+        return entrada;
+
+      } catch (HorarioException e) {
         System.out.println(e.getMessage());
       }
     }

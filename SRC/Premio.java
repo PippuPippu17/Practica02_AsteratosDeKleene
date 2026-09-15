@@ -1,3 +1,5 @@
+import java.util.Locale;
+
 public class Premio {
   private int idPremio;
   private String nombre;
@@ -102,7 +104,7 @@ public class Premio {
         this.categoria,
         this.rangoEdad,
         String.valueOf(this.puntosRequeridos),
-        String.format("%.2f", this.valorAproximado),
+        String.format(Locale.US, "%.2f", this.valorAproximado),
         String.valueOf(this.idSucursal),
         String.valueOf(this.stock));
   }
@@ -133,7 +135,7 @@ public class Premio {
         "Categoría\t\t: " + categoria + "\n" +
         "Rango de Edad\t\t: " + rangoEdad + "\n" +
         "Puntos Requeridos\t: " + puntosRequeridos + " pts\n" +
-        "Valor Aproximado\t: $" + String.format("%.2f", valorAproximado) + " MXN\n" +
+        "Valor Aproximado\t: $" + String.format(Locale.US, "%.2f", valorAproximado) + " MXN\n" +
         "ID Sucursal\t\t: " + idSucursal + "\n" +
         "Stock\t\t\t: " + stock + " disponibles\n" +
         "---------------------------------------------------------------------------------------";

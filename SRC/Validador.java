@@ -1,5 +1,6 @@
 import exceptions.ValidacionException;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Concentra las reglas de dominio y de formato que debe cumplir la información
@@ -146,7 +147,8 @@ public class Validador {
    */
   public static double validarMontoPositivo(double valor, String campo) throws ValidacionException {
     if (valor <= 0) {
-      throw new ValidacionException(campo, String.format("%.2f", valor), "debe ser una cantidad mayor que cero.");
+      throw new ValidacionException(campo, String.format(Locale.US, "%.2f", valor),
+          "debe ser una cantidad mayor que cero.");
     }
 
     return valor;
