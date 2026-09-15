@@ -21,14 +21,20 @@ public class Main {
   /** Ruta del archivo CSV donde se guardan los clientes. */
   private static final String RUTA_CLIENTES = "./SRC/clientes.csv";
 
+  /** Ruta del archivo CSV donde se guarda el inventario de premios. */
+  private static final String RUTA_INVENTARIO = "./SRC/inventario.csv";
+
   /** Encabezado del archivo de sucursales. */
   private static final String ENCABEZADO_SUCURSALES = "idSucursal,nombre,calle,numExterior,numeroInterior,colonia,estado,telefono,horario";
 
   /** Encabezado del archivo de premios. */
-  private static final String ENCABEZADO_PREMIOS = "idPremio,nombre,categoria,rangoEdad,puntosRequeridos,valorAproximado,idSucursal,stock";
+  private static final String ENCABEZADO_PREMIOS = "idPremio,nombre,categoria,rangoEdad,puntosRequeridos,valorAproximado";
 
   /** Encabezado del archivo de clientes. */
-  private static final String ENCABEZADO_CLIENTES = "idCliente,nombreCliente,apellidoP,apellidoM,fechaNac,edad,sexo,correoE,telefonoC";
+  private static final String ENCABEZADO_CLIENTES = "idCliente,nombreCliente,apellidoP,apellidoM,fechaNac,sexo,correos,telefonos";
+
+  /** Encabezado del archivo del inventario de premios. */
+  private static final String ENCABEZADO_INVENTARIO = "idInventario,idSucursal,idPremio,cantidadDisponible";
 
   /**
    * Muestra las opciones del menú principal.
@@ -38,7 +44,8 @@ public class Main {
     System.out.println("1. Gestionar sucursales");
     System.out.println("2. Gestionar premios");
     System.out.println("3. Gestionar clientes");
-    System.out.println("4. Salir");
+    System.out.println("4. Gestionar inventario de premios");
+    System.out.println("5. Salir");
   }
 
   /**
@@ -62,6 +69,9 @@ public class Main {
       if (HandlerCSV.inicializarArchivo(RUTA_CLIENTES, ENCABEZADO_CLIENTES)) {
         System.out.println("Se creó el archivo '" + RUTA_CLIENTES + "'.");
       }
+      if (HandlerCSV.inicializarArchivo(RUTA_INVENTARIO, ENCABEZADO_INVENTARIO)) {
+        System.out.println("Se creó el archivo '" + RUTA_INVENTARIO + "'.");
+      }
 
       return true;
 
@@ -82,16 +92,17 @@ public class Main {
       return;
     }
 
-    MenuSucursales menuSucursales = new MenuSucursales(RUTA_SUCURSALES);
-    MenuPremios menuPremios = new MenuPremios(RUTA_PREMIOS);
+    MenuSucursales menuSucursales = new MenuSucursales(RUTA_SUCURSALES, RUTA_INVENTARIO);
+    MenuPremios menuPremios = new MenuPremios(RUTA_PREMIOS, RUTA_INVENTARIO);
     MenuClientes menuClientes = new MenuClientes(RUTA_CLIENTES);
+    MenuInventario menuInventario = new MenuInventario(RUTA_INVENTARIO, RUTA_SUCURSALES, RUTA_PREMIOS);
 
     boolean salir = false;
 
     while (!salir) {
       try {
         mostrarMenuPrincipal();
-        int opcion = EntradaConsola.leerOpcion("Selecciona una opción: ", 1, 4);
+        int opcion = EntradaConsola.leerOpcion("Selecciona una opción: ", 1, 5);
 
         switch (opcion) {
           case 1:
@@ -104,6 +115,9 @@ public class Main {
             menuClientes.mostrar();
             break;
           case 4:
+            menuInventario.mostrar();
+            break;
+          case 5:
             System.out.println("\nGracias por usar PuellaGame. Hasta pronto.");
             salir = true;
             break;

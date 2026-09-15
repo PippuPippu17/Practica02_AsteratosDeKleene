@@ -1,297 +1,301 @@
+import exceptions.ValidacionException;
+import java.time.LocalDate;
+import java.time.Period;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * Esta clase representa a la entidad Cliente.
+ * Representa a un cliente del centro de entretenimiento.
+ *
+ * La clase refleja tres decisiones que se tomaron en el análisis de
+ * requerimientos y que la versión anterior no respetaba:
+ *
+ * Los correos y los teléfonos son atributos multivaluados, ya que el caso de
+ * uso
+ * habla de ellos en plural. Dentro del archivo CSV se guardan en una sola
+ * columna, separados con punto y coma, para no tener que fijar de antemano
+ * cuántos puede tener cada cliente.
+ *
+ * La fecha de nacimiento se guarda como texto con el formato DD/MM/AAAA. Antes
+ * era un número entero, lo cual perdía el cero inicial de los días menores a
+ * diez y hacía ambiguo un valor como 1012001.
+ *
+ * La edad no se almacena, se calcula a partir de la fecha de nacimiento. Era el
+ * único dato del sistema que podía contradecir a otro.
  */
 public class Cliente implements Registrable {
+
+  /** Carácter que separa los valores dentro de una columna multivaluada. */
+  public static final String SEPARADOR_MULTIVALUADO = ";";
 
   private int idCliente;
   private String nombreCliente;
   private String apellidoP;
   private String apellidoM;
-  private int fechaNac;
-  private int edad;
+  private String fechaNac;
   private String sexo;
-  private String correoE;
-  private long telefonoC;
+  private List<String> correos;
+  private List<String> telefonos;
 
   /**
-   * Constructor por omisión
+   * Constructor por omisión.
    */
   public Cliente() {
-
     this.idCliente = 0;
     this.nombreCliente = "";
     this.apellidoP = "";
     this.apellidoM = "";
-    this.fechaNac = 0;
-    this.edad = 0;
+    this.fechaNac = "";
     this.sexo = "";
-    this.correoE = "";
-    this.telefonoC = 0L;
+    this.correos = new ArrayList<>();
+    this.telefonos = new ArrayList<>();
   }
 
   /**
-   * Constructor para inicializar un CLiente con sus atributos.
+   * Construye un cliente con todos sus atributos.
    *
    * @param idCliente     Identificador del cliente.
-   * @param nombreCliente Nombre(s) del cliente.
+   * @param nombreCliente Nombre o nombres del cliente.
    * @param apellidoP     Apellido paterno del cliente.
    * @param apellidoM     Apellido materno del cliente.
-   * @param fechaNac      Fecha de nacimiento del cliente (DDMMAAAA)
-   * @param edad          Edad del cliente.
+   * @param fechaNac      Fecha de nacimiento con formato DD/MM/AAAA.
    * @param sexo          Sexo o género del cliente.
-   * @param correoE       Correo electrónico de contacto.
-   * @param telefonoC     Número de teléfono celular o de contacto.
+   * @param correos       Correos electrónicos de contacto.
+   * @param telefonos     Números telefónicos de contacto.
    */
-  public Cliente(int idCliente, String nombreCliente, String apellidoP, String apellidoM, int fechaNac, int edad,
-      String sexo,
-      String correoE, long telefonoC) {
-
+  public Cliente(int idCliente, String nombreCliente, String apellidoP, String apellidoM, String fechaNac,
+      String sexo, List<String> correos, List<String> telefonos) {
     this.idCliente = idCliente;
     this.nombreCliente = nombreCliente;
     this.apellidoP = apellidoP;
     this.apellidoM = apellidoM;
     this.fechaNac = fechaNac;
-    this.edad = edad;
     this.sexo = sexo;
-    this.correoE = correoE;
-    this.telefonoC = telefonoC;
+    this.correos = (correos != null) ? new ArrayList<>(correos) : new ArrayList<>();
+    this.telefonos = (telefonos != null) ? new ArrayList<>(telefonos) : new ArrayList<>();
   }
 
+  // ------------------------------------------------------------ Getters ----
+
   /**
-   * Getter del identificador del cliente.
+   * Regresa el identificador del cliente.
    *
-   * @return El ID del cliente.
+   * @return El identificador del cliente.
    */
   public int getIdCliente() {
-    return idCliente;
+    return this.idCliente;
   }
 
   /**
-   * Establece el identificador del cliente.
+   * Regresa el nombre del cliente.
    *
-   * @param idCliente El nuevo ID a asignar.
+   * @return El nombre del cliente.
+   */
+  public String getNombreCliente() {
+    return this.nombreCliente;
+  }
+
+  /**
+   * Regresa el apellido paterno del cliente.
+   *
+   * @return El apellido paterno del cliente.
+   */
+  public String getApellidoP() {
+    return this.apellidoP;
+  }
+
+  /**
+   * Regresa el apellido materno del cliente.
+   *
+   * @return El apellido materno del cliente.
+   */
+  public String getApellidoM() {
+    return this.apellidoM;
+  }
+
+  /**
+   * Regresa la fecha de nacimiento del cliente.
+   *
+   * @return La fecha de nacimiento con formato DD/MM/AAAA.
+   */
+  public String getFechaNac() {
+    return this.fechaNac;
+  }
+
+  /**
+   * Regresa el sexo o género del cliente.
+   *
+   * @return El sexo del cliente.
+   */
+  public String getSexo() {
+    return this.sexo;
+  }
+
+  /**
+   * Regresa los correos electrónicos del cliente.
+   *
+   * Se entrega una copia para que nadie modifique la lista interna sin pasar por
+   * los métodos de la clase.
+   *
+   * @return Los correos del cliente.
+   */
+  public List<String> getCorreos() {
+    return new ArrayList<>(this.correos);
+  }
+
+  /**
+   * Regresa los teléfonos del cliente.
+   *
+   * Se entrega una copia para que nadie modifique la lista interna sin pasar por
+   * los métodos de la clase.
+   *
+   * @return Los teléfonos del cliente.
+   */
+  public List<String> getTelefonos() {
+    return new ArrayList<>(this.telefonos);
+  }
+
+  /**
+   * Calcula la edad del cliente a partir de su fecha de nacimiento.
+   *
+   * La edad no se almacena en ningún lado, se obtiene siempre de la fecha, de
+   * modo que no puede quedar desactualizada ni contradecirla.
+   *
+   * @return La edad en años cumplidos, o -1 si la fecha no puede interpretarse.
+   */
+  public int getEdad() {
+    try {
+      String[] partes = this.fechaNac.split("/");
+      LocalDate nacimiento = LocalDate.of(
+          Integer.parseInt(partes[2]),
+          Integer.parseInt(partes[1]),
+          Integer.parseInt(partes[0]));
+
+      return Period.between(nacimiento, LocalDate.now()).getYears();
+
+    } catch (RuntimeException e) {
+      return -1;
+    }
+  }
+
+  /**
+   * Regresa el rango de edad que le corresponde al cliente para los premios.
+   *
+   * @return "Infantil", "Juvenil", "Adulto" o "Sin determinar" si no hay fecha.
+   */
+  public String getRangoEdad() {
+    int edad = getEdad();
+
+    if (edad < 0) {
+      return "Sin determinar";
+    }
+    if (edad <= 12) {
+      return "Infantil";
+    }
+    if (edad <= 17) {
+      return "Juvenil";
+    }
+
+    return "Adulto";
+  }
+
+  // ------------------------------------------------------------ Setters ----
+
+  /**
+   * Cambia el identificador del cliente.
+   *
+   * @param idCliente Nuevo identificador.
    */
   public void setIdCliente(int idCliente) {
     this.idCliente = idCliente;
   }
 
   /**
-   * Getter del nombre del cliente.
+   * Cambia el nombre del cliente.
    *
-   * @return El nombre del cliente.
-   */
-  public String getNombreCliente() {
-    return nombreCliente;
-  }
-
-  /**
-   * Establece el nombre del cliente.
-   *
-   * @param nombreCliente El nuevo nombre a asignar.
+   * @param nombreCliente Nuevo nombre.
    */
   public void setNombreCliente(String nombreCliente) {
     this.nombreCliente = nombreCliente;
   }
 
   /**
-   * Getter del apellido paterno del cliente.
+   * Cambia el apellido paterno del cliente.
    *
-   * @return El apellido paterno.
-   */
-  public String getApellidoP() {
-    return apellidoP;
-  }
-
-  /**
-   * Establece el apellido paterno del cliente.
-   *
-   * @param apellidoP El nuevo apellido paterno a asignar.
+   * @param apellidoP Nuevo apellido paterno.
    */
   public void setApellidoP(String apellidoP) {
     this.apellidoP = apellidoP;
   }
 
   /**
-   * Getter del apellido materno del cliente.
+   * Cambia el apellido materno del cliente.
    *
-   * @return El apellido materno.
-   */
-  public String getApellidoM() {
-    return apellidoM;
-  }
-
-  /**
-   * Establece el apellido materno del cliente.
-   *
-   * @param apellidoM El nuevo apellido materno a asignar.
+   * @param apellidoM Nuevo apellido materno.
    */
   public void setApellidoM(String apellidoM) {
     this.apellidoM = apellidoM;
   }
 
   /**
-   * Getter de la fecha de nacimiento del cliente.
+   * Cambia la fecha de nacimiento del cliente.
    *
-   * @return La fecha de nacimiento.
+   * @param fechaNac Nueva fecha con formato DD/MM/AAAA.
+   * @throws ValidacionException Si la fecha no existe en el calendario.
    */
-  public int getFechaNac() {
-    return fechaNac;
+  public void setFechaNac(String fechaNac) throws ValidacionException {
+    this.fechaNac = Validador.validarFecha(fechaNac);
   }
 
   /**
-   * Establece la fecha de nacimiento del cliente.
+   * Cambia el sexo o género del cliente.
    *
-   * @param fechaNac La nueva fecha de nacimiento a asignar.
-   */
-  public void setFechaNac(int fechaNac) {
-    this.fechaNac = fechaNac;
-  }
-
-  /**
-   * Getter de la edad del cliente.
-   *
-   * @return La edad del cliente.
-   */
-  public int getEdad() {
-    return edad;
-  }
-
-  /**
-   * Establece la edad del cliente.
-   *
-   * @param edad La nueva edad a asignar.
-   */
-  public void setEdad(int edad) {
-    this.edad = edad;
-  }
-
-  /**
-   * Obtiene el sexo del cliente.
-   *
-   * @return El sexo del cliente.
-   */
-  public String getSexo() {
-    return sexo;
-  }
-
-  /**
-   * Establece el sexo del cliente.
-   *
-   * @param sexo El nuevo sexo a asignar.
+   * @param sexo Nuevo sexo.
    */
   public void setSexo(String sexo) {
     this.sexo = sexo;
   }
 
   /**
-   * Obtiene el correo electrónico del cliente.
+   * Sustituye la lista de correos del cliente.
    *
-   * @return El correo electrónico.
+   * @param correos Nuevos correos.
    */
-  public String getCorreoE() {
-    return correoE;
+  public void setCorreos(List<String> correos) {
+    this.correos = (correos != null) ? new ArrayList<>(correos) : new ArrayList<>();
   }
 
   /**
-   * Establece el correo electrónico del cliente.
+   * Sustituye la lista de teléfonos del cliente.
    *
-   * @param correoE El nuevo correo electrónico a asignar.
+   * @param telefonos Nuevos teléfonos.
    */
-  public void setCorreoE(String correoE) {
-    this.correoE = correoE;
+  public void setTelefonos(List<String> telefonos) {
+    this.telefonos = (telefonos != null) ? new ArrayList<>(telefonos) : new ArrayList<>();
   }
 
   /**
-   * Getter del número de teléfono del cliente.
+   * Agrega un correo a la lista del cliente.
    *
-   * @return El número telefónico.
+   * @param correo Correo a agregar.
    */
-  public long getTelefonoC() {
-    return telefonoC;
+  public void agregarCorreo(String correo) {
+    this.correos.add(correo);
   }
 
   /**
-   * Establece el número de teléfono del cliente.
+   * Agrega un teléfono a la lista del cliente.
    *
-   * @param telefonoC El nuevo teléfono a asignar.
+   * @param telefono Teléfono a agregar.
    */
-  public void setTelefonoC(long telefonoC) {
-    this.telefonoC = telefonoC;
+  public void agregarTelefono(String telefono) {
+    this.telefonos.add(telefono);
   }
 
-  /**
-   * Convierte una instancia de Cliente a una línea con formato CSV.
-   * Los campos de texto se escapan con {@link CSVUtil}.
-   * 
-   * @return Una cadena de texto con los datos del cliente separados por comas.
-   */
-  public String toCSV() {
-    return CSVUtil.unir(
-        String.valueOf(this.idCliente),
-        this.nombreCliente,
-        this.apellidoP,
-        this.apellidoM,
-        String.valueOf(this.fechaNac),
-        String.valueOf(this.edad),
-        this.sexo,
-        this.correoE,
-        String.valueOf(this.telefonoC));
-  }
+  // --------------------------------------------------------------- CSV ----
 
   /**
-   * Método que recostruye una instancia de Cliente a partir de una línea de texto
-   * del archvio CSV.
-   * 
-   * @param lineaCSV Línea del archivo CSV que tiene los datos de un cliente.
-   * 
-   * @return Una nueva instancia de la clase Cliente con los datos de la línea.
-   * 
-   * @throws IllegalArgumentException Si la línea CSV no tiene el número mínimo de
-   *                                  columnas requeridas.
-   * @throws NumberFormatException    Si los valores numéricos (ID, fechaNac, edad
-   *                                  o teléfono) no tienen un formato válido para
-   *                                  ser convertidos.
-   */
-  public static Cliente fromCSV(String lineaCSV) throws NumberFormatException {
-    String[] datos = CSVUtil.parsear(lineaCSV);
-    if (datos.length < 9) {
-      throw new IllegalArgumentException("Error: la línea CSV no tiene todas las columnas que necestiamos.");
-    }
-
-    int idCliente = Integer.parseInt(datos[0].trim());
-    String nombreCliente = datos[1].trim();
-    String apellidoP = datos[2].trim();
-    String apellidoM = datos[3].trim();
-    int fechaNac = Integer.parseInt(datos[4].trim());
-    int edad = Integer.parseInt(datos[5].trim());
-    String sexo = datos[6].trim();
-    String correoE = datos[7].trim();
-    long telefonoC = Long.parseLong(datos[8].trim());
-
-    return new Cliente(idCliente, nombreCliente, apellidoP, apellidoM, fechaNac, edad, sexo, correoE, telefonoC);
-  }
-
-  /**
-   * Devuelve una representación en formato de texto de una instancia de Cliente.
-   * 
-   * @return Cadena de texto formateada con la información detallada del cliente.
-   */
-  @Override
-  public String toString() {
-    return "----------------------------------------Cliente----------------------------------------\n" +
-        "ID Cliente\t \t: " + idCliente + "\n" +
-        "Nombre\t \t \t: " + nombreCliente + "\n" +
-        "Apellidos\t \t: " + apellidoP + " " + apellidoM + "\n" +
-        "Fecha de Nacimiento\t: " + fechaNac + "\n" +
-        "Edad\t \t \t: " + edad + "\n" +
-        "Sexo\t \t \t: " + sexo + "\n" +
-        "Correo Electrónico\t: " + correoE + "\n" +
-        "Teléfono\t \t: " + telefonoC + "\n" +
-        "----------------------------------------------------------------------------------------";
-  }
-
-  /**
-   * Regresa la llave que identifica a el cliente dentro de su archivo CSV.
+   * Regresa la llave que identifica al cliente dentro de su archivo CSV.
    *
    * @return La llave del cliente.
    */
@@ -300,4 +304,96 @@ public class Cliente implements Registrable {
     return this.idCliente;
   }
 
+  /**
+   * Convierte el cliente a una línea con formato CSV.
+   *
+   * Los correos y los teléfonos se unen con punto y coma dentro de su columna, y
+   * el campo completo se escapa con {@link CSVUtil} igual que los demás.
+   *
+   * @return Una línea lista para escribirse en el archivo CSV.
+   */
+  @Override
+  public String toCSV() {
+    return CSVUtil.unir(
+        String.valueOf(this.idCliente),
+        this.nombreCliente,
+        this.apellidoP,
+        this.apellidoM,
+        this.fechaNac,
+        this.sexo,
+        String.join(SEPARADOR_MULTIVALUADO, this.correos),
+        String.join(SEPARADOR_MULTIVALUADO, this.telefonos));
+  }
+
+  /**
+   * Reconstruye un cliente a partir de una línea del archivo CSV.
+   *
+   * @param lineaCSV Línea del archivo con los datos de un cliente.
+   * @return Una nueva instancia de Cliente con los datos de la línea.
+   * @throws IllegalArgumentException Si la línea no tiene todas las columnas.
+   * @throws NumberFormatException    Si la llave no es un número.
+   */
+  public static Cliente fromCSV(String lineaCSV) throws IllegalArgumentException, NumberFormatException {
+    String[] datos = CSVUtil.parsear(lineaCSV);
+
+    if (datos.length < 8) {
+      throw new IllegalArgumentException("La línea del CSV no tiene todas las columnas de un cliente.");
+    }
+
+    int idCliente = Integer.parseInt(datos[0].trim());
+    String nombreCliente = datos[1].trim();
+    String apellidoP = datos[2].trim();
+    String apellidoM = datos[3].trim();
+    String fechaNac = datos[4].trim();
+    String sexo = datos[5].trim();
+    List<String> correos = separarValores(datos[6]);
+    List<String> telefonos = separarValores(datos[7]);
+
+    return new Cliente(idCliente, nombreCliente, apellidoP, apellidoM, fechaNac, sexo, correos, telefonos);
+  }
+
+  /**
+   * Separa el contenido de una columna multivaluada en la lista de valores que la
+   * componen.
+   *
+   * @param columna Texto de la columna, con los valores unidos por punto y coma.
+   * @return Lista con los valores, sin espacios sobrantes ni entradas vacías.
+   */
+  private static List<String> separarValores(String columna) {
+    List<String> valores = new ArrayList<>();
+
+    if (columna == null || columna.trim().isEmpty()) {
+      return valores;
+    }
+
+    for (String valor : columna.split(SEPARADOR_MULTIVALUADO)) {
+      if (!valor.trim().isEmpty()) {
+        valores.add(valor.trim());
+      }
+    }
+
+    return valores;
+  }
+
+  /**
+   * Regresa los datos del cliente con un formato legible para la consola.
+   *
+   * @return Los datos del cliente listos para imprimirse.
+   */
+  @Override
+  public String toString() {
+    String separador = "-".repeat(40);
+    int edad = getEdad();
+
+    return separador + "Cliente" + separador + "\n" +
+        "ID Cliente\t\t: " + this.idCliente + "\n" +
+        "Nombre\t\t\t: " + this.nombreCliente + "\n" +
+        "Apellidos\t\t: " + this.apellidoP + " " + this.apellidoM + "\n" +
+        "Fecha de Nacimiento\t: " + this.fechaNac + "\n" +
+        "Edad\t\t\t: " + ((edad >= 0) ? (edad + " años (" + getRangoEdad() + ")") : "Sin determinar") + "\n" +
+        "Sexo\t\t\t: " + this.sexo + "\n" +
+        "Correos\t\t\t: " + String.join(", ", this.correos) + "\n" +
+        "Teléfonos\t\t: " + String.join(", ", this.telefonos) + "\n" +
+        separador + separador.substring(0, 7) + "\n";
+  }
 }

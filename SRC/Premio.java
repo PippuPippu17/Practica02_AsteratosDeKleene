@@ -1,5 +1,14 @@
 import java.util.Locale;
 
+/**
+ * Representa un premio del catálogo del centro de entretenimiento.
+ *
+ * El premio describe únicamente al artículo: su nombre, su categoría, el rango
+ * de edad al que va dirigido, su valor aproximado y los puntos que cuesta
+ * canjearlo. La cantidad disponible no vive aquí, porque cada sucursal tiene su
+ * propio inventario y un mismo premio puede existir en varias de ellas. Esa
+ * relación se guarda en {@link InventarioPremio}.
+ */
 public class Premio implements Registrable {
   private int idPremio;
   private String nombre;
@@ -7,8 +16,6 @@ public class Premio implements Registrable {
   private String rangoEdad;
   private int puntosRequeridos;
   private double valorAproximado;
-  private int idSucursal;
-  private int stock;
 
   public Premio() {
     idPremio = 0;
@@ -17,20 +24,16 @@ public class Premio implements Registrable {
     rangoEdad = "";
     puntosRequeridos = 0;
     valorAproximado = 0;
-    idSucursal = 0;
-    stock = 0;
   }
 
   public Premio(int idPremio, String nombre, String categoria, String rangoEdad, int puntosRequeridos,
-      double valorAproximado, int idSucursal, int stock) {
+      double valorAproximado) {
     this.idPremio = idPremio;
     this.nombre = nombre;
     this.categoria = categoria;
     this.rangoEdad = rangoEdad;
     this.puntosRequeridos = puntosRequeridos;
     this.valorAproximado = valorAproximado;
-    this.idSucursal = idSucursal;
-    this.stock = stock;
   }
 
   public int getIdPremio() {
@@ -81,22 +84,6 @@ public class Premio implements Registrable {
     this.valorAproximado = valorAproximado;
   }
 
-  public int getIdSucursal() {
-    return idSucursal;
-  }
-
-  public void setIdSucursal(int idSucursal) {
-    this.idSucursal = idSucursal;
-  }
-
-  public int getStock() {
-    return stock;
-  }
-
-  public void setStock(int stock) {
-    this.stock = stock;
-  }
-
   public String toCSV() {
     return CSVUtil.unir(
         String.valueOf(this.idPremio),
@@ -104,9 +91,7 @@ public class Premio implements Registrable {
         this.categoria,
         this.rangoEdad,
         String.valueOf(this.puntosRequeridos),
-        String.format(Locale.US, "%.2f", this.valorAproximado),
-        String.valueOf(this.idSucursal),
-        String.valueOf(this.stock));
+        String.format(Locale.US, "%.2f", this.valorAproximado));
   }
 
   /**
@@ -119,7 +104,7 @@ public class Premio implements Registrable {
    */
   public static Premio fromCSV(String lineaCSV) throws IllegalArgumentException, NumberFormatException {
     String[] datos = CSVUtil.parsear(lineaCSV);
-    if (datos.length < 8) {
+    if (datos.length < 6) {
       throw new IllegalArgumentException("Error: la línea CSV no tiene todas las columnas que necestiamos.");
     }
 
@@ -129,10 +114,8 @@ public class Premio implements Registrable {
     String rangoEdad = datos[3].trim();
     int puntosRequeridos = Integer.parseInt(datos[4].trim());
     double valorAproximado = Double.parseDouble(datos[5].trim());
-    int idSucursal = Integer.parseInt(datos[6].trim());
-    int stock = Integer.parseInt(datos[7].trim());
 
-    return new Premio(idPremio, nombre, categoria, rangoEdad, puntosRequeridos, valorAproximado, idSucursal, stock);
+    return new Premio(idPremio, nombre, categoria, rangoEdad, puntosRequeridos, valorAproximado);
   }
 
   @Override
@@ -144,8 +127,6 @@ public class Premio implements Registrable {
         "Rango de Edad\t\t: " + rangoEdad + "\n" +
         "Puntos Requeridos\t: " + puntosRequeridos + " pts\n" +
         "Valor Aproximado\t: $" + String.format(Locale.US, "%.2f", valorAproximado) + " MXN\n" +
-        "ID Sucursal\t\t: " + idSucursal + "\n" +
-        "Stock\t\t\t: " + stock + " disponibles\n" +
         "---------------------------------------------------------------------------------------";
   }
 

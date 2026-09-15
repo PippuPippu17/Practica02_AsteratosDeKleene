@@ -1,3 +1,5 @@
+import java.util.List;
+
 /**
  * Menú que administra a los clientes del centro de entretenimiento.
  *
@@ -8,13 +10,19 @@
  */
 public class MenuClientes extends MenuEntidad<Cliente> {
 
+  /** Cantidad máxima de correos que se le pueden registrar a un cliente. */
+  private static final int MAX_CORREOS = 3;
+
+  /** Cantidad máxima de teléfonos que se le pueden registrar a un cliente. */
+  private static final int MAX_TELEFONOS = 3;
+
   /**
    * Construye el menú de clientes.
    *
    * @param rutaArchivo Ruta del archivo CSV de clientes.
    */
   public MenuClientes(String rutaArchivo) {
-    super(rutaArchivo, "cliente", "Clientes");
+    super(rutaArchivo, "cliente", "Clientes", "el");
   }
 
   /**
@@ -55,6 +63,10 @@ public class MenuClientes extends MenuEntidad<Cliente> {
   /**
    * Captura los campos comunes al alta y a la edición de un cliente.
    *
+   * La edad ya no se pregunta, se calcula a partir de la fecha de nacimiento. Los
+   * correos y los teléfonos se capturan como listas, ya que el caso de uso los
+   * describe en plural.
+   *
    * @param llave Llave que llevará el cliente.
    * @return El cliente construido con los datos capturados.
    */
@@ -62,12 +74,12 @@ public class MenuClientes extends MenuEntidad<Cliente> {
     String nombre = EntradaConsola.leerTexto("Nombre del cliente: ");
     String apellidoP = EntradaConsola.leerTexto("Apellido paterno: ");
     String apellidoM = EntradaConsola.leerTexto("Apellido materno: ");
-    int fechaNac = EntradaConsola.leerFecha("Fecha de nacimiento (DDMMAAAA): ");
-    int edad = EntradaConsola.leerEntero("Edad: ", Validador.EDAD_MINIMA, Validador.EDAD_MAXIMA);
+    String fechaNac = EntradaConsola.leerFecha("Fecha de nacimiento (DD/MM/AAAA): ");
     String sexo = EntradaConsola.leerDeCatalogo("Sexo", Validador.SEXOS);
-    String correo = EntradaConsola.leerCorreo("Correo electrónico: ");
-    long telefono = EntradaConsola.leerTelefono("Teléfono (10 dígitos): ");
 
-    return new Cliente(llave, nombre, apellidoP, apellidoM, fechaNac, edad, sexo, correo, telefono);
+    List<String> correos = EntradaConsola.leerVarios("correo", EntradaConsola::leerCorreo, MAX_CORREOS);
+    List<String> telefonos = EntradaConsola.leerVarios("teléfono", EntradaConsola::leerTelefonoTexto, MAX_TELEFONOS);
+
+    return new Cliente(llave, nombre, apellidoP, apellidoM, fechaNac, sexo, correos, telefonos);
   }
 }

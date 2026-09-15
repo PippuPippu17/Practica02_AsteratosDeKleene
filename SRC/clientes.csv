@@ -1,9 +1,9 @@
-idCliente,nombreCliente,apellidoP,apellidoM,fechaNac,edad,sexo,correoE,telefonoC
-1,Ana Sofía,Márquez,Ríos,15032001,25,Femenino,ana.marquez@example.com,5512345678
-2,Luis Fernando,Hernández,Gómez,22071998,28,Masculino,luis.hernandez@example.com,5523456789
-3,Camila,Torres,Vega,10112010,15,Femenino,camila.torres@example.com,5534567890
-4,Diego,Ramírez,Solís,28022014,12,Masculino,diego.ramirez@example.com,5545678901
-5,Renata,Castillo,Núñez,19091995,30,No binario,renata.castillo@example.com,5556789012
-6,Mateo,Flores,Aguilar,11062007,19,Masculino,mateo.flores@example.com,5567890123
-7,Valeria,Ortiz,Medina,25121989,36,Femenino,valeria.ortiz@example.com,5578901234
-8,Emiliano,Navarro,Cruz,14042013,13,Masculino,emiliano.navarro@example.com,5589012345
+idCliente,nombreCliente,apellidoP,apellidoM,fechaNac,sexo,correos,telefonos
+1,Ana Sofía,Márquez,Ríos,15/03/2001,Femenino,ana.marquez@example.com;a.marquez@trabajo.com,5512345678;5512340000
+2,Luis Fernando,Hernández,Gómez,22/07/1998,Masculino,luis.hernandez@example.com,5523456789
+3,Camila,Torres,Vega,10/11/2010,Femenino,camila.torres@example.com,5534567890
+4,Diego,Ramírez,Solís,28/02/2014,Masculino,diego.ramirez@example.com,5545678901;5545670000
+5,Renata,Castillo,Núñez,19/09/1995,No binario,renata.castillo@example.com,5556789012
+6,Mateo,Flores,Aguilar,11/06/2007,Masculino,mateo.flores@example.com;mateo.f@example.org,5567890123
+7,Valeria,Ortiz,Medina,25/12/1989,Femenino,valeria.ortiz@example.com,5578901234
+8,Emiliano,Navarro,Cruz,14/04/2013,Masculino,emiliano.navarro@example.com,5589012345

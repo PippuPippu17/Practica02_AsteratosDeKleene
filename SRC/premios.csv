@@ -1,12 +1,12 @@
-idPremio,nombre,categoria,rangoEdad,puntosRequeridos,valorAproximado,idSucursal,stock
-1,Paleta de caramelo,Bajo,Infantil,20,10.00,1,150
-2,Yoyo luminoso,Bajo,Infantil,120,60.00,1,80
-3,Peluche pequeño de gato,Bajo,Infantil,600,300.00,2,45
-4,Set de calcomanías,Bajo,Juvenil,800,400.00,3,60
-5,Balón de fútbol,Medio,Juvenil,1200,600.00,1,25
-6,Set de bloques de construcción,Medio,Juvenil,2400,1200.00,3,15
-7,Peluche gigante de oso,Medio,Infantil,3800,1900.00,2,10
-8,Audífonos inalámbricos,Grande,Adulto,4500,2250.00,1,8
-9,Bocina portátil,Grande,Adulto,6000,3000.00,4,6
-10,Consola portátil retro,Grande,Adulto,9000,4500.00,3,3
-11,Tableta electrónica,Grande,Adulto,12000,6000.00,5,2
+idPremio,nombre,categoria,rangoEdad,puntosRequeridos,valorAproximado
+1,Paleta de caramelo,Bajo,Infantil,20,10.00
+2,Yoyo luminoso,Bajo,Infantil,120,60.00
+3,Peluche pequeño de gato,Bajo,Infantil,600,300.00
+4,Set de calcomanías,Bajo,Juvenil,800,400.00
+5,Balón de fútbol,Medio,Juvenil,1200,600.00
+6,Set de bloques de construcción,Medio,Juvenil,2400,1200.00
+7,Peluche gigante de oso,Medio,Infantil,3800,1900.00
+8,Audífonos inalámbricos,Grande,Adulto,4500,2250.00
+9,Bocina portátil,Grande,Adulto,6000,3000.00
+10,Consola portátil retro,Grande,Adulto,9000,4500.00
+11,Tableta electrónica,Grande,Adulto,12000,6000.00

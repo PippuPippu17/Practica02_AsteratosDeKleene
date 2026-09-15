@@ -1,5 +1,6 @@
 import exceptions.ArchivoCSVException;
 import exceptions.RegistroNoEncontradoException;
+import exceptions.ValidacionException;
 
 /**
  * Clase base de los menús que administran una entidad del prototipo.
@@ -27,17 +28,22 @@ public abstract class MenuEntidad<T extends Registrable> {
   /** Nombre de la entidad en plural y con mayúscula, por ejemplo "Sucursales". */
   protected final String entidadPlural;
 
+  /** Artículo que concuerda con la entidad, "la" o "el". */
+  protected final String articulo;
+
   /**
    * Construye el menú de una entidad.
    *
    * @param rutaArchivo   Ruta del archivo CSV de la entidad.
    * @param entidad       Nombre en singular y minúscula, usado en los mensajes.
    * @param entidadPlural Nombre en plural y con mayúscula, usado en el título.
+   * @param articulo      Artículo que concuerda con la entidad, "la" o "el".
    */
-  protected MenuEntidad(String rutaArchivo, String entidad, String entidadPlural) {
+  protected MenuEntidad(String rutaArchivo, String entidad, String entidadPlural, String articulo) {
     this.rutaArchivo = rutaArchivo;
     this.entidad = entidad;
     this.entidadPlural = entidadPlural;
+    this.articulo = articulo;
   }
 
   // ------------------------------------------------- Operaciones propias ----
@@ -118,13 +124,13 @@ public abstract class MenuEntidad<T extends Registrable> {
    * escribir al usuario información que no se va a poder guardar.
    */
   public void agregar() {
-    System.out.println("Ingresa los datos de la nueva " + entidad + ":");
+    System.out.println("Ingresa los datos de" + ("la".equals(articulo) ? " la nueva " : "l nuevo ") + entidad + ":");
 
     try {
       T registro = capturar();
       HandlerCSV.addRegistro(rutaArchivo, registro.getLlave(), registro.toCSV());
 
-      System.out.println("\nSe agregó con éxito la " + entidad + " con los siguientes datos:");
+      System.out.println("\nSe agregó con éxito " + articulo + " " + entidad + " con los siguientes datos:");
       System.out.println(registro);
 
     } catch (ArchivoCSVException e) {
@@ -138,12 +144,14 @@ public abstract class MenuEntidad<T extends Registrable> {
    * Pide una llave, busca el registro y muestra sus datos completos.
    */
   public void consultar() {
-    int llave = EntradaConsola.leerEntero("Ingresa la llave de la " + entidad + " a consultar: ");
+    int llave = EntradaConsola
+        .leerEntero("Ingresa la llave de" + ("la".equals(articulo) ? " la " : "l ") + entidad + " a consultar: ");
 
     try {
       T registro = desdeCSV(HandlerCSV.buscarPorId(rutaArchivo, llave));
 
-      System.out.println("\nDatos de la " + entidad + " con llave '" + llave + "':");
+      System.out
+          .println("\nDatos de" + ("la".equals(articulo) ? " la " : "l ") + entidad + " con llave '" + llave + "':");
       System.out.println(registro);
 
     } catch (RegistroNoEncontradoException e) {
@@ -160,7 +168,8 @@ public abstract class MenuEntidad<T extends Registrable> {
    * sobrescribe la línea correspondiente del archivo.
    */
   public void editar() {
-    int llave = EntradaConsola.leerEntero("Ingresa la llave de la " + entidad + " a editar: ");
+    int llave = EntradaConsola
+        .leerEntero("Ingresa la llave de" + ("la".equals(articulo) ? " la " : "l ") + entidad + " a editar: ");
     T original = null;
 
     // Se confirma que el registro existe antes de pedir nada más.
@@ -180,13 +189,14 @@ public abstract class MenuEntidad<T extends Registrable> {
 
     System.out.println("\nDatos actuales:");
     System.out.println(original);
-    System.out.println("Ingresa los datos nuevos de la " + entidad + ":");
+    System.out.println("Ingresa los datos nuevos de" + ("la".equals(articulo) ? " la " : "l ") + entidad + ":");
 
     try {
       T editado = capturarEdicion(llave, original);
       HandlerCSV.setRegistro(rutaArchivo, llave, editado.toCSV());
 
-      System.out.println("\nLos nuevos datos de la " + entidad + " con llave '" + llave + "' son:");
+      System.out.println("\nLos nuevos datos de" + ("la".equals(articulo) ? " la " : "l ") + entidad + " con llave '"
+          + llave + "' son:");
       System.out.println(editado);
 
     } catch (RegistroNoEncontradoException e) {
@@ -202,7 +212,8 @@ public abstract class MenuEntidad<T extends Registrable> {
    * Pide una llave, muestra el registro y lo elimina previa confirmación.
    */
   public void eliminar() {
-    int llave = EntradaConsola.leerEntero("Ingresa la llave de la " + entidad + " a borrar: ");
+    int llave = EntradaConsola
+        .leerEntero("Ingresa la llave de" + ("la".equals(articulo) ? " la " : "l ") + entidad + " a borrar: ");
 
     try {
       T registro = desdeCSV(HandlerCSV.buscarPorId(rutaArchivo, llave));
@@ -210,13 +221,13 @@ public abstract class MenuEntidad<T extends Registrable> {
       System.out.println("\nSe va a eliminar el siguiente registro:");
       System.out.println(registro);
 
-      if (!EntradaConsola.confirmar("¿Confirmas la eliminación?")) {
+      if (!confirmarEliminacion(llave)) {
         System.out.println("No se eliminó nada.");
         return;
       }
 
       HandlerCSV.removeRegistro(rutaArchivo, llave);
-      System.out.println("Se eliminó la " + entidad + " con llave '" + llave + "'.");
+      System.out.println("Se eliminó " + articulo + " " + entidad + " con llave '" + llave + "'.");
 
     } catch (RegistroNoEncontradoException e) {
       System.out.println(e.getMessage());
@@ -225,6 +236,19 @@ public abstract class MenuEntidad<T extends Registrable> {
     } catch (Exception e) {
       reportar(e);
     }
+  }
+
+  /**
+   * Pregunta al usuario si confirma la eliminación de un registro.
+   *
+   * Las subclases pueden sobrescribirlo para advertir primero sobre los registros
+   * de otras entidades que dependen del que se va a borrar.
+   *
+   * @param llave Llave del registro que se va a eliminar.
+   * @return true si el borrado puede continuar.
+   */
+  protected boolean confirmarEliminacion(int llave) {
+    return EntradaConsola.confirmar("¿Confirmas la eliminación?");
   }
 
   // ----------------------------------------------------------- Auxiliar ----
@@ -238,7 +262,9 @@ public abstract class MenuEntidad<T extends Registrable> {
    * @param e Excepción que se va a reportar.
    */
   protected void reportar(Exception e) {
-    if (e instanceof IllegalArgumentException) {
+    if (e instanceof ValidacionException) {
+      System.out.println(e.getMessage());
+    } else if (e instanceof IllegalArgumentException) {
       System.out.println("El registro está en un formato incorrecto: " + e.getMessage());
     } else {
       System.out.println("Ocurrió un error inesperado: " + e.getMessage());

@@ -1,5 +1,6 @@
 import exceptions.HorarioException;
 import exceptions.ValidacionException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
@@ -197,6 +198,26 @@ public class EntradaConsola {
   }
 
   /**
+   * Lee un número telefónico como texto y no lo acepta hasta que tenga la
+   * cantidad de dígitos que exige el sistema.
+   *
+   * @param mensaje Texto que se muestra antes de leer.
+   * @return El teléfono capturado.
+   */
+  public static String leerTelefonoTexto(String mensaje) {
+    while (true) {
+      String entrada = leerLinea(mensaje);
+
+      try {
+        return Validador.validarTelefono(entrada);
+
+      } catch (ValidacionException e) {
+        System.out.println(e.getMessage());
+      }
+    }
+  }
+
+  /**
    * Lee un correo electrónico y no lo acepta hasta que tenga una estructura
    * válida.
    *
@@ -260,23 +281,60 @@ public class EntradaConsola {
   }
 
   /**
-   * Lee una fecha en formato DDMMAAAA y no la acepta hasta que corresponda a un
-   * día que exista en el calendario.
+   * Lee una fecha con formato DD/MM/AAAA y no la acepta hasta que corresponda a
+   * un día que exista en el calendario y que no esté en el futuro.
    *
    * @param mensaje Texto que se muestra antes de leer.
-   * @return La fecha capturada.
+   * @return La fecha capturada, normalizada a dos dígitos de día y de mes.
    */
-  public static int leerFecha(String mensaje) {
+  public static String leerFecha(String mensaje) {
     while (true) {
-      int fecha = leerEntero(mensaje);
+      String entrada = leerLinea(mensaje);
 
       try {
-        return Validador.validarFecha(fecha);
+        return Validador.validarFechaPasada(entrada);
 
       } catch (ValidacionException e) {
         System.out.println(e.getMessage());
       }
     }
+  }
+
+  /**
+   * Lee uno o más valores para un campo multivaluado.
+   *
+   * El primer valor es obligatorio y después se pregunta si se quiere agregar
+   * otro, hasta que el usuario diga que no o se alcance el límite.
+   *
+   * @param etiqueta Nombre del campo en singular, por ejemplo "correo".
+   * @param lector   Función que lee y valida un solo valor.
+   * @param maximo   Cantidad máxima de valores que se pueden capturar.
+   * @return La lista con los valores capturados.
+   */
+  public static List<String> leerVarios(String etiqueta, java.util.function.Function<String, String> lector,
+      int maximo) {
+    List<String> valores = new ArrayList<>();
+
+    while (valores.size() < maximo) {
+      String valor = lector.apply(etiqueta.substring(0, 1).toUpperCase() + etiqueta.substring(1)
+          + " " + (valores.size() + 1) + ": ");
+
+      if (!valores.contains(valor)) {
+        valores.add(valor);
+      } else {
+        System.out.println("Ese " + etiqueta + " ya está registrado para este cliente.");
+      }
+
+      if (valores.size() >= maximo) {
+        break;
+      }
+
+      if (!confirmar("¿Deseas agregar otro " + etiqueta + "?")) {
+        break;
+      }
+    }
+
+    return valores;
   }
 
   /**

@@ -10,13 +10,18 @@ import exceptions.ValidacionException;
  */
 public class MenuPremios extends MenuEntidad<Premio> {
 
+  /** Ruta del archivo del inventario, para avisar antes de borrar un premio. */
+  private final String rutaInventario;
+
   /**
    * Construye el menú de premios.
    *
-   * @param rutaArchivo Ruta del archivo CSV de premios.
+   * @param rutaArchivo    Ruta del archivo CSV de premios.
+   * @param rutaInventario Ruta del archivo CSV del inventario.
    */
-  public MenuPremios(String rutaArchivo) {
-    super(rutaArchivo, "premio", "Premios");
+  public MenuPremios(String rutaArchivo, String rutaInventario) {
+    super(rutaArchivo, "premio", "Premios", "el");
+    this.rutaInventario = rutaInventario;
   }
 
   /**
@@ -55,7 +60,33 @@ public class MenuPremios extends MenuEntidad<Premio> {
   }
 
   /**
+   * Avisa cuántos renglones del inventario dependen del premio antes de borrarlo.
+   *
+   * @param llave Llave del premio que se va a eliminar.
+   * @return true si el borrado puede continuar.
+   */
+  @Override
+  protected boolean confirmarEliminacion(int llave) {
+    try {
+      int dependientes = IntegridadReferencial.inventarioDePremio(rutaInventario, llave).size();
+
+      if (dependientes > 0) {
+        System.out.println("Atención: este premio aparece en el inventario de " + dependientes
+            + " sucursal(es). Esos renglones quedarían apuntando a un premio que ya no existe.");
+      }
+
+    } catch (Exception e) {
+      System.out.println("No se pudo revisar el inventario: " + e.getMessage());
+    }
+
+    return super.confirmarEliminacion(llave);
+  }
+
+  /**
    * Captura los campos comunes al alta y a la edición de un premio.
+   *
+   * La sucursal y la cantidad disponible ya no se piden aquí, porque pertenecen
+   * al inventario y no al premio en sí.
    *
    * @param llave Llave que llevará el premio.
    * @return El premio construido con los datos capturados.
@@ -66,18 +97,13 @@ public class MenuPremios extends MenuEntidad<Premio> {
     String rangoEdad = EntradaConsola.leerDeCatalogo("Rango de edad", Validador.RANGOS_EDAD);
     int puntosRequeridos = leerPuntos(categoria);
     double valorAproximado = EntradaConsola.leerMontoPositivo("Valor aproximado en MXN: ", "valor aproximado");
-    int idSucursal = EntradaConsola.leerEntero("Llave de la sucursal donde está disponible: ");
-    int stock = EntradaConsola.leerEntero("Cantidad disponible en existencia: ", 0, 99999);
 
-    return new Premio(llave, nombre, categoria, rangoEdad, puntosRequeridos, valorAproximado, idSucursal, stock);
+    return new Premio(llave, nombre, categoria, rangoEdad, puntosRequeridos, valorAproximado);
   }
 
   /**
    * Lee los puntos que pide un premio y no los acepta hasta que correspondan a su
    * categoría.
-   *
-   * La regla proviene del caso de uso: los premios bajos van de 20 a 1,000
-   * puntos, los medios de 1,001 a 3,999 y los grandes de 4,000 en adelante.
    *
    * @param categoria Categoría del premio, ya validada contra su catálogo.
    * @return Los puntos capturados.

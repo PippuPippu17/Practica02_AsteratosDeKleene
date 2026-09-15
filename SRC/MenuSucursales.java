@@ -8,13 +8,18 @@
  */
 public class MenuSucursales extends MenuEntidad<Sucursal> {
 
+  /** Ruta del archivo del inventario, para avisar antes de borrar. */
+  private final String rutaInventario;
+
   /**
    * Construye el menú de sucursales.
    *
-   * @param rutaArchivo Ruta del archivo CSV de sucursales.
+   * @param rutaArchivo    Ruta del archivo CSV de sucursales.
+   * @param rutaInventario Ruta del archivo CSV del inventario.
    */
-  public MenuSucursales(String rutaArchivo) {
-    super(rutaArchivo, "sucursal", "Sucursales");
+  public MenuSucursales(String rutaArchivo, String rutaInventario) {
+    super(rutaArchivo, "sucursal", "Sucursales", "la");
+    this.rutaInventario = rutaInventario;
   }
 
   /**
@@ -32,9 +37,6 @@ public class MenuSucursales extends MenuEntidad<Sucursal> {
 
   /**
    * Pide por consola los datos nuevos de una sucursal existente.
-   *
-   * La llave no se vuelve a preguntar, ya que es la que identifica al registro
-   * que se está editando.
    *
    * @param llave    Llave de la sucursal que se edita.
    * @param original Sucursal tal como está guardada.
@@ -56,6 +58,30 @@ public class MenuSucursales extends MenuEntidad<Sucursal> {
   @Override
   protected Sucursal desdeCSV(String lineaCSV) throws Exception {
     return Sucursal.fromCSV(lineaCSV);
+  }
+
+  /**
+   * Avisa cuántos renglones del inventario dependen de la sucursal antes de
+   * borrarla.
+   *
+   * @param llave Llave de la sucursal que se va a eliminar.
+   * @return true si el borrado puede continuar.
+   */
+  @Override
+  protected boolean confirmarEliminacion(int llave) {
+    try {
+      int dependientes = IntegridadReferencial.inventarioDeSucursal(rutaInventario, llave).size();
+
+      if (dependientes > 0) {
+        System.out.println("Atención: esta sucursal tiene " + dependientes
+            + " premio(s) en su inventario. Esos renglones quedarían apuntando a una sucursal que ya no existe.");
+      }
+
+    } catch (Exception e) {
+      System.out.println("No se pudo revisar el inventario: " + e.getMessage());
+    }
+
+    return super.confirmarEliminacion(llave);
   }
 
   /**

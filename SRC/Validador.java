@@ -213,6 +213,30 @@ public class Validador {
   }
 
   /**
+   * Verifica que un número telefónico escrito como texto tenga exactamente diez
+   * dígitos.
+   *
+   * Los teléfonos de un cliente se guardan como texto porque son varios dentro de
+   * una misma columna del CSV.
+   *
+   * @param telefono Número a revisar.
+   * @return El número sin espacios sobrantes.
+   * @throws ValidacionException Si el número no tiene diez dígitos o trae algo
+   *                             que
+   *                             no sea un dígito.
+   */
+  public static String validarTelefono(String telefono) throws ValidacionException {
+    String limpio = validarTextoNoVacio(telefono, "teléfono");
+
+    if (!limpio.matches("\\d{" + DIGITOS_TELEFONO + "}")) {
+      throw new ValidacionException("teléfono", limpio,
+          "debe tener exactamente " + DIGITOS_TELEFONO + " dígitos y solo dígitos.");
+    }
+
+    return limpio;
+  }
+
+  /**
    * Verifica que un correo electrónico tenga una estructura mínima válida.
    *
    * Se revisa que exista una sola arroba, que haya texto antes y después de
@@ -251,43 +275,74 @@ public class Validador {
   // ------------------------------------------------------------ Fechas ----
 
   /**
-   * Verifica que una fecha capturada en formato DDMMAAAA corresponda a un día
-   * que existe en el calendario.
+   * Verifica que una fecha escrita como DD/MM/AAAA corresponda a un día que
+   * existe en el calendario.
    *
-   * Se aceptan valores de siete dígitos, ya que el día menor a diez pierde su
-   * cero inicial al guardarse como número entero.
+   * Se guarda como texto y no como número para no perder el cero inicial de los
+   * días y los meses menores a diez.
    *
-   * @param fecha Fecha en formato DDMMAAAA.
-   * @return La misma fecha si es válida.
+   * @param fecha Fecha con formato DD/MM/AAAA.
+   * @return La fecha normalizada, siempre con dos dígitos de día y de mes.
    * @throws ValidacionException Si la fecha no existe o está fuera de rango.
    */
-  public static int validarFecha(int fecha) throws ValidacionException {
-    String texto = String.valueOf(fecha);
+  public static String validarFecha(String fecha) throws ValidacionException {
+    String limpia = validarTextoNoVacio(fecha, "fecha");
+    String[] partes = limpia.split("/");
 
-    if (texto.length() < 7 || texto.length() > 8) {
-      throw new ValidacionException("fecha", texto, "debe capturarse con el formato DDMMAAAA.");
+    if (partes.length != 3) {
+      throw new ValidacionException("fecha", limpia, "debe escribirse con el formato DD/MM/AAAA.");
     }
 
-    int dia = fecha / 1000000;
-    int mes = (fecha / 10000) % 100;
-    int anio = fecha % 10000;
+    int dia;
+    int mes;
+    int anio;
+
+    try {
+      dia = Integer.parseInt(partes[0].trim());
+      mes = Integer.parseInt(partes[1].trim());
+      anio = Integer.parseInt(partes[2].trim());
+
+    } catch (NumberFormatException e) {
+      throw new ValidacionException("fecha", limpia, "el día, el mes y el año deben ser números.");
+    }
 
     if (mes < 1 || mes > 12) {
-      throw new ValidacionException("fecha", texto, "el mes '" + mes + "' no existe.");
+      throw new ValidacionException("fecha", limpia, "el mes '" + mes + "' no existe.");
     }
 
     if (anio < 1900 || anio > 2100) {
-      throw new ValidacionException("fecha", texto, "el año '" + anio + "' está fuera de rango.");
+      throw new ValidacionException("fecha", limpia, "el año '" + anio + "' está fuera de rango.");
     }
 
     int diasDelMes = diasDelMes(mes, anio);
 
     if (dia < 1 || dia > diasDelMes) {
-      throw new ValidacionException("fecha", texto,
+      throw new ValidacionException("fecha", limpia,
           "el mes '" + mes + "' del año '" + anio + "' tiene " + diasDelMes + " días.");
     }
 
-    return fecha;
+    return String.format("%02d/%02d/%04d", dia, mes, anio);
+  }
+
+  /**
+   * Verifica que una fecha no sea posterior al día de hoy.
+   *
+   * @param fecha Fecha con formato DD/MM/AAAA, ya validada.
+   * @return La misma fecha si es válida.
+   * @throws ValidacionException Si la fecha está en el futuro.
+   */
+  public static String validarFechaPasada(String fecha) throws ValidacionException {
+    String normalizada = validarFecha(fecha);
+    String[] partes = normalizada.split("/");
+
+    java.time.LocalDate capturada = java.time.LocalDate.of(
+        Integer.parseInt(partes[2]), Integer.parseInt(partes[1]), Integer.parseInt(partes[0]));
+
+    if (capturada.isAfter(java.time.LocalDate.now())) {
+      throw new ValidacionException("fecha", normalizada, "no puede ser una fecha futura.");
+    }
+
+    return normalizada;
   }
 
   /**
@@ -324,8 +379,11 @@ public class Validador {
   // ------------------------------------------- Reglas propias del caso -----
 
   /**
-   * Verifica que la edad de un cliente esté dentro del rango que atiende el
-   * centro de entretenimiento.
+   * Verifica que la edad derivada de una fecha de nacimiento corresponda a una
+   * persona que el centro puede atender.
+   *
+   * La edad ya no se captura, se calcula a partir de la fecha, así que esta
+   * validación se aplica sobre el resultado del cálculo.
    *
    * @param edad Edad a revisar.
    * @return La misma edad si es válida.
