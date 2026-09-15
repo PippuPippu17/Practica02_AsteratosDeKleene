@@ -2,7 +2,6 @@
 import exceptions.HorarioException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class Sucursal {
     private int idSucursal;
@@ -161,25 +160,6 @@ public class Sucursal {
                 "Teléfono\t: " + telefono + "\n" +
                 "Horario\t \t: " + horario.toString() + "\n" +
                 "----------------------------------------------------------------------------------------";
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        Sucursal sucursal = (Sucursal) o;
-        return idSucursal == sucursal.idSucursal;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(idSucursal);
     }
 }
 
